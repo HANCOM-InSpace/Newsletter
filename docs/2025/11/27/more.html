@@ -7,18 +7,17 @@
 <title>InSpace Weekly - 추가 기사 모아보기</title>
 
 <style>
-  /* 화면 폭이 768px 이하(대부분 모바일)일 때만 적용 */
   @media (max-width: 768px) {
     .hero-bg {
-      /* 배경 이미지 위치 (필요하면 center -10px, center 10px 같이 미세 조정 가능) */
       background-position: center 0 !important;
     }
     .hero-header-cell {
-      /* 위/아래 padding을 같게 해서 내용이 중앙쯤 오도록 */
-      padding: 24px 0 24px 0 !important;
+      /* 모바일에서 헤더 텍스트를 더 위로 올리고 싶으면 이 값을 줄이면 됨 */
+      padding: 20px 0 12px 0 !important;
     }
   }
 </style>
+
 
 
 </head>
@@ -33,7 +32,7 @@
               background-repeat:no-repeat;">
   <tr>
     <td align="center" class="hero-header-cell"
-        style="padding:40px 0;
+        style="padding:20px 20;
                background: linear-gradient(to bottom right,
                            rgba(0,0,40,0.55),
                            rgba(0,0,0,0.55));">
@@ -82,7 +81,7 @@
 </table>
 
 <!-- 본문 -->
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="padding:12px 0 32px 0;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="padding:24px 0 32px 0;">
   <tr>
     <td align="center">
       <table cellpadding="0" cellspacing="0" border="0"
