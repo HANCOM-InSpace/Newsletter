@@ -4,39 +4,236 @@
 <head>
 <meta charset="UTF-8">
 <title>이전 뉴스레터 모아보기</title>
-</head>
-<body style="background:#f3f4f6; font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif; margin:0; padding:0;">
-<center>
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:700px; margin:0 auto;">
-    <tr>
-      <td style="padding:24px 16px; font-size:22px; font-weight:700; color:#111827;">
-        📚 이전 뉴스레터 모아보기
-      </td>
-    </tr>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <tr>
-      <td style="padding:0 16px 40px 16px;">
-        <table width="100%" cellpadding="0" cellspacing="0" border="0">
-          
-        <tr>
-          <td style="padding-bottom:12px;">
-            <a href="https://hancom-inspace.github.io/Weekly-Newsletter/2025/12/05/index.html" target="_blank"
-               style="display:block; text-decoration:none; border-radius:12px;
-                      border:1px solid #e5e7eb; padding:16px; background:#ffffff;">
-              <div style="font-size:16px; font-weight:600; color:#111827;">
-                12월 1주차 뉴스레터
-              </div>
-              <div style="font-size:13px; color:#6b7280;">
-                업로드: 2025.12.05
-              </div>
-            </a>
-          </td>
-        </tr>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "맑은 고딕", system-ui, sans-serif;
+    background: #020617;
+    color: #e5e7eb;
+  }
+
+  .page-wrap {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #020617 0%, #020617 40%, #0f172a 100%);
+  }
+
+  /* 스크롤 드리븐 비디오 영역 */
+  .scroll-video-wrapper {
+    position: relative;
+    height: 200vh; /* 이 섹션 전체가 스크롤 구간 */
+    overflow: hidden;
+  }
+
+  .scroll-video {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .scroll-video video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .scroll-video-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    pointer-events: none;
+    color: #e5e7eb;
+    font-size: 28px;
+    font-weight: 700;
+    text-shadow: 0 20px 40px rgba(0,0,0,0.65);
+    padding: 0 20px;
+  }
+
+  .scroll-video-overlay-sub {
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 400;
+    opacity: 0.85;
+  }
+
+  /* 아래 아카이브 카드 영역 */
+  .archive-section {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 36px 16px 64px;
+    box-sizing: border-box;
+  }
+
+  .archive-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #e5e7eb;
+    margin-bottom: 12px;
+  }
+
+  .archive-subtitle {
+    font-size: 13px;
+    color: #9ca3af;
+    margin-bottom: 24px;
+  }
+
+  .archive-card-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+  }
+
+  .archive-card {
+    display: block;
+    text-decoration: none;
+    border-radius: 14px;
+    border: 1px solid #1f2937;
+    padding: 14px 16px;
+    background: rgba(15, 23, 42, 0.92);
+    box-shadow: 0 4px 14px rgba(15,23,42,0.45);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  }
+
+  .archive-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(15,23,42,0.85);
+    border-color: #38bdf8;
+    background: rgba(15, 23, 42, 0.98);
+  }
+
+  .archive-card-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #f9fafb;
+    margin-bottom: 3px;
+  }
+
+  .archive-card-date {
+    font-size: 12px;
+    color: #9ca3af;
+  }
+
+  .archive-footer {
+    text-align: center;
+    font-size: 11px;
+    color: #6b7280;
+    padding: 32px 16px 40px;
+  }
+
+  @media (max-width: 768px) {
+    .scroll-video-overlay {
+      font-size: 22px;
+    }
+    .scroll-video-overlay-sub {
+      font-size: 12px;
+    }
+    .archive-section {
+      padding: 28px 14px 48px;
+    }
+  }
+</style>
+</head>
+
+<body>
+<div class="page-wrap">
+
+  <!-- 스크롤에 따라 비디오 타임라인이 움직이는 영역 -->
+  <section class="scroll-video-wrapper" id="scroll-section">
+    <div class="scroll-video">
+      <video id="scrollVideo" preload="auto" muted playsinline>
+        <source src="https://hancom-inspace.github.io/Weekly-Newsletter/docs/assets/archive_bg.mp4" type="video/mp4" />
+      </video>
+      <div class="scroll-video-overlay">
+        Hancom InSpace · Weekly Archive
+        <div class="scroll-video-overlay-sub">
+          스크롤을 내려보세요. 이전 뉴스레터들이 아래에 정리되어 있습니다.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 실제 아카이브 카드 목록 -->
+  <section class="archive-section">
+    <div class="archive-title">📚 이전 뉴스레터 모아보기</div>
+    <div class="archive-subtitle">
+      가장 최근 뉴스레터가 위에, 오래된 순으로 아래에 정렬됩니다.
+    </div>
+
+    <table class="archive-card-table" cellpadding="0" cellspacing="0" border="0">
+      
+          <tr>
+            <td style="padding-bottom:14px;">
+              <a href="https://hancom-inspace.github.io/Weekly-Newsletter/2025/12/05/index.html" target="_blank" class="archive-card">
+                <div class="archive-card-label">
+                  12월 1주차 뉴스레터
+                </div>
+                <div class="archive-card-date">
+                  업로드: 2025.12.05
+                </div>
+              </a>
+            </td>
+          </tr>
         
-        </table>
-      </td>
-    </tr>
-  </table>
-</center>
+    </table>
+  </section>
+
+  <div class="archive-footer">
+    © 2025 Hancom InSpace Weekly Newsletter. All rights reserved.
+  </div>
+
+</div>
+
+<script>
+  const video = document.getElementById("scrollVideo");
+  const section = document.getElementById("scroll-section");
+
+  let videoDuration = 0;
+  let ticking = false;
+
+  video.addEventListener("loadedmetadata", () => {
+    videoDuration = video.duration || 0;
+  });
+
+  function updateVideoByScroll() {
+    if (!videoDuration) return;
+
+    const rect = section.getBoundingClientRect();
+    const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+    const sectionHeight = section.offsetHeight;
+
+    const scrollTop = -rect.top;  // 섹션 상단이 얼마나 위로 올라갔는지
+    let progress = scrollTop / (sectionHeight - windowHeight);
+
+    if (progress < 0) progress = 0;
+    if (progress > 1) progress = 1;
+
+    video.currentTime = progress * videoDuration;
+  }
+
+  function onScroll() {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        updateVideoByScroll();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }
+
+  window.addEventListener("scroll", onScroll);
+  window.addEventListener("resize", updateVideoByScroll);
+</script>
+
 </body>
 </html>
