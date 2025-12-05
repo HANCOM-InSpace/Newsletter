@@ -49,7 +49,10 @@
       border-radius:14px;
       border:1px solid rgba(255,255,255,0.55);
       padding:18px 20px;
-      background:rgba(15,23,42,0.35);     /* 더 밝게 */
+
+      /* 평소: 살짝 반투명한 흰색 */
+      background:rgba(255,255,255,0.18);
+
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       box-shadow:0 10px 28px rgba(15,23,42,0.6);
@@ -58,9 +61,12 @@
 
   .archive-card:hover {
       transform:translateY(-4px);
-      background:rgba(30,64,175,0.55);     /* hover 시 살짝 파란 기운 */
+
+      /* 호버: 좀 더 밝고 투명한 흰색 */
+      background:rgba(255,255,255,0.32);
+
       box-shadow:0 18px 40px rgba(15,23,42,0.85);
-      border-color:rgba(191,219,254,0.95);
+      border-color:rgba(255,255,255,0.95);
   }
 
   .archive-card-label {
