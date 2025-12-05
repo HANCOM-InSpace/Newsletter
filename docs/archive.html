@@ -87,6 +87,35 @@
       padding:14px;
     }
   }
+
+
+  /* 모바일 전용: 배경 비디오 숨기고 이미지로 대체 */
+  @media (max-width: 768px) {
+    /* 비디오 안 보이게 */
+    .bg-video {
+      display: none;
+    }
+
+    /* 모바일에서는 이미지 배경 사용 */
+    body {
+      background:
+        url('https://hancom-inspace.github.io/Weekly-Newsletter/assets/archive_bg_fallback.png')
+        center top / cover no-repeat;
+      color: #e5e7eb; /* 텍스트 색 유지 */
+    }
+
+    /* 그라디언트가 너무 세면 살짝 줄이기 (선택 사항) */
+    .archive-wrap {
+      background: radial-gradient(
+        circle at top,
+        rgba(148,163,184,0.18) 0,
+        transparent 55%
+      );
+    }
+  }
+
+
+
 </style>
 </head>
 
