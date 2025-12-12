@@ -12016,3 +12016,674 @@ if IN_COLAB:
         traceback.print_exc()
 else:
     print("\n⚠️ GitHub 자동 업로드는 Colab 환경에서만 실행됩니다.")
+
+# ============================
+# 3. NewsAPI에서 기사 수집
+# ============================
+def search_news_newsapi(query, from_date, to_date, language=None, page_size=50):
+    """
+    NewsAPI (2순위 보조 소스 1)
+    """
+    url = "https://newsapi.org/v2/everything"
+    params = {
+        "q": query,
+        "from": from_date,
+        "to": to_date,
+        "sortBy": "publishedAt",
+        "pageSize": page_size,
+        "apiKey": NEWSAPI_KEY,
+    }
+    if language:
+        params["language"] = language
+
+    r = requests.get(url, params=params, timeout=10)
+    r.raise_for_status()
+    return r.json().get("articles", [])
+
+
+def search_news_mediastack(query, from_date, to_date, language=None, page_size=30):
+    """
+    MediaStack (2순위 보조 소스 2)
+    - 무료 플랜이면 HTTPS가 안될 수도 있어서 http로 써야 할 때도 있음. (문서 참고)
+    """
+    url = "http://api.mediastack.com/v1/news"
+    limit = min(page_size, 50)
+
+    params = {
+        "access_key": MEDIASTACK_API_KEY,
+        "keywords": query,
+        "date_from": from_date,
+        "date_to": to_date,
+        "sort": "published_desc",
+        "limit": limit,
+    }
+    if language:
+        # mediastack는 언어 코드가 en, ko 등 (공식 문서 확인)
+        params["languages"] = language
+
+    try:
+        r = requests.get(url, params=params, timeout=10)
+        r.raise_for_status()
+    except Exception as e:
+        print(f"[WARN] MediaStack error (q={query}, lang={language}): {e}")
+        return []
+
+    data = r.json()
+    articles = []
+    for item in data.get("data", []):
+        articles.append({
+            "source": {"name": item.get("source")},
+            "author": item.get("author"),
+            "title": item.get("title"),
+            "description": item.get("description"),
+            "content": item.get("description"),
+            "url": item.get("url"),
+            "publishedAt": item.get("published_at"),  # 또는 published_at/created_at 확인 필요
+        })
+    return articles
+
+def search_news_serpapi(query, from_date, to_date, language=None, page_size=30):
+    """
+    SerpAPI Google News (3순위 백업 소스)
+    """
+    url = "https://serpapi.com/search"
+    num = min(page_size, 20)
+
+    params = {
+        "engine": "google_news",
+        "q": query,
+        "api_key": SERPAPI_KEY,
+        "num": num,
+    }
+    if language:
+        params["hl"] = language  # hl=ko, hl=en 등
+
+    try:
+        r = requests.get(url, params=params, timeout=10)
+        r.raise_for_status()
+    except Exception as e:
+        print(f"[WARN] SerpAPI error (q={query}, lang={language}): {e}")
+        return []
+
+    data = r.json()
+    results = data.get("news_results") or []
+    articles = []
+    for item in results:
+        # published_date는 사람이 읽기 좋은 문자열일 수 있음 ("3 hours ago" 이런 식이면 나중에 필터에서 걸러질 수 있음)
+        articles.append({
+            "source": {"name": item.get("source")},
+            "author": None,
+            "title": item.get("title"),
+            "description": item.get("snippet"),
+            "content": item.get("snippet"),
+            "url": item.get("link"),
+            "publishedAt": item.get("date") or item.get("published_date"),
+        })
+    return articles
+
+
+def search_news_currents(query, from_date, to_date, language=None, page_size=30):
+    """
+    Currents API (3순위 백업 소스)
+    """
+    url = "https://api.currentsapi.services/v1/search"
+    limit = min(page_size, 50)
+
+    params = {
+        "apiKey": CURRENTS_API_KEY,
+        "keywords": query,
+        "limit": limit,
+    }
+    if language:
+        params["language"] = language
+
+    # 날짜 필터는 플랜에 따라 동작 방식이 달라서, 필요시 문서 보고 맞게 조정
+    params["start_date"] = from_date
+    params["end_date"] = to_date
+
+    try:
+        r = requests.get(url, params=params, timeout=10)
+        r.raise_for_status()
+    except Exception as e:
+        print(f"[WARN] Currents error (q={query}, lang={language}): {e}")
+        return []
+
+    data = r.json()
+    results = data.get("news") or []
+    articles = []
+    for item in results:
+        articles.append({
+            "source": {"name": item.get("author")},
+            "author": item.get("author"),
+            "title": item.get("title"),
+            "description": item.get("description"),
+            "content": item.get("description"),
+            "url": item.get("url"),
+            "publishedAt": item.get("published"),  # ISO8601인지 확인 필요
+        })
+    return articles
+
+
+def search_news_gnews(query, from_date, to_date, language=None, page_size=30):
+    """
+    GNews API (1순위 메인 소스)
+    - 공식 문서 보고 파라미터 이름/제한은 필요시 조정
+    """
+    url = "https://gnews.io/api/v4/search"
+    max_size = min(page_size, 50)  # 무료 플랜은 보통 10~50 제한
+
+    params = {
+        "q": query,
+        "token": GNEWS_API_KEY,
+        "max": max_size,
+        "from": from_date,
+        "to": to_date,
+        "sortby": "publishedAt",
+    }
+    if language:
+        # GNews는 언어코드가 en, ko 등을 지원 (문서 확인해서 맞춰야 함)
+        params["lang"] = language
+
+    try:
+        r = requests.get(url, params=params, timeout=10)
+        r.raise_for_status()
+    except Exception as e:
+        print(f"[WARN] GNews error (q={query}, lang={language}): {e}")
+        return []
+
+    data = r.json()
+    articles = []
+    for item in data.get("articles", []):
+        articles.append({
+            "source": {"name": item.get("source", {}).get("name")},
+            "author": item.get("author"),
+            "title": item.get("title"),
+            "description": item.get("description"),
+            "content": item.get("content"),
+            "url": item.get("url"),
+            # GNews는 publishedAt이 ISO8601 형식
+            "publishedAt": item.get("publishedAt"),
+        })
+    return articles
+
+
+def search_news_newsdata(query, from_date, to_date, language=None, page_size=30):
+    """
+    NewsData.io 'latest' 엔드포인트를 사용하는 버전
+    - 무료 플랜에서도 동작
+    - latest는 과거 n일이 아니라, 최근 ~48시간 기준이지만,
+      우리는 어차피 NewsAPI에서 일주일치 커버하고,
+      NewsData는 "추가 소스" 느낌으로만 쓰면 됨.
+    """
+    url = NEWSDATA_BASE_URL_LATEST
+
+    # free 플랜에서 한 번에 가져올 수 있는 최대 size는 10개
+    # (그 이상 넣으면 에러) :contentReference[oaicite:1]{index=1}
+    size = min(page_size, 10)
+
+    params = {
+        "apikey": NEWSDATA_API_KEY,
+        "q": query,
+        "size": size,
+    }
+
+    if language:
+        params["language"] = language  # "en", "ko" 등
+
+    try:
+        r = requests.get(url, params=params, timeout=10)
+        r.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        status = getattr(e.response, "status_code", None)
+        print(f"[WARN] NewsData.io HTTP error (status={status}, q={query}, lang={language}): {e}")
+        return []
+    except Exception as e:
+        print(f"[WARN] NewsData.io error (q={query}, lang={language}): {e}")
+        return []
+
+    data = r.json()
+    results = data.get("results") or []
+
+    articles = []
+
+    for item in results:
+        creator = item.get("creator")
+        if isinstance(creator, list):
+            author = creator[0] if creator else None
+        else:
+            author = creator
+
+        articles.append({
+            # 기존 NewsAPI article 구조에 맞춰 변환
+            "source": {"name": item.get("source_id")},
+            "author": author,
+            "title": item.get("title"),
+            "description": item.get("description"),
+            "content": item.get("content"),
+            "url": item.get("link"),
+            "publishedAt": item.get("pubDate"),  # 예: "2025-12-08 10:30:00"
+        })
+
+    return articles
+
+
+def search_news_topheadlines_kr(page_size=50):
+    """
+    NewsAPI 'top-headlines' 엔드포인트로
+    한국(country=kr) 기사만 가져오는 함수
+    """
+    url = "https://newsapi.org/v2/top-headlines"
+    params = {
+        "country": "kr",          # 한국
+        "pageSize": page_size,    # 한 번에 가져올 기사 수
+        "apiKey": NEWSAPI_KEY,
+    }
+
+    r = requests.get(url, params=params)
+    r.raise_for_status()
+    return r.json().get("articles", [])
+
+
+EXCLUDE_KEYWORDS = [
+    "tutorial", "how to", "explained", "explainer", "what is", "history of",
+    "advertisement", "sponsored", "review", "buy now", "product page"
+]
+
+def is_basic_newsworthy(article):
+    """
+    노골적인 튜토리얼/광고/상품 페이지 등 1차 필터
+    """
+    title = (article.get("title") or "").lower()
+    description = (article.get("description") or "").lower()
+    content = (article.get("content") or "").lower()
+    text = " ".join([title, description, content])
+    for bad in EXCLUDE_KEYWORDS:
+        if bad in text:
+            return False
+    return True
+
+
+def collect_articles_for_topic(topic_id, keywords):
+    collected_ko = []  # 한글 기사 저장
+    collected_en = []  # 영어 기사 저장
+    seen_urls = set()
+
+    for kw in keywords:
+        for lang in LANGUAGES:
+            # 언어별 목표 개수 확인
+            if lang == "ko":
+                if len(collected_ko) >= ARTICLES_PER_LANG_KO:
+                    continue
+                remaining = ARTICLES_PER_LANG_KO - len(collected_ko)
+                target_list = collected_ko
+            else:  # "en"
+                if len(collected_en) >= ARTICLES_PER_LANG_EN:
+                    continue
+                remaining = ARTICLES_PER_LANG_EN - len(collected_en)
+                target_list = collected_en
+
+            tier_articles = []
+
+            # -----------------------------
+            # 1️⃣ 1순위: GNews
+            # -----------------------------
+            try:
+                gnews_list = search_news_gnews(
+                    kw,
+                    DATE_FROM,
+                    DATE_TO,
+                    language=lang,
+                    page_size=remaining,
+                )
+                tier_articles.extend(gnews_list or [])
+            except Exception as e:
+                print(f"[WARN] GNews error (kw={kw}, lang={lang}): {e}")
+
+            # -----------------------------
+            # 2️⃣ 2순위: NewsAPI + MediaStack
+            #    (GNews에서 부족하면)
+            # -----------------------------
+            if len(tier_articles) < remaining:
+                rem2 = remaining - len(tier_articles)
+
+                # 2-1) NewsAPI
+                try:
+                    newsapi_list = search_news_newsapi(
+                        kw,
+                        DATE_FROM,
+                        DATE_TO,
+                        language=lang,
+                        page_size=rem2,
+                    )
+                    tier_articles.extend(newsapi_list or [])
+                except Exception as e:
+                    print(f"[WARN] NewsAPI error (kw={kw}, lang={lang}): {e}")
+
+                # 2-2) MediaStack
+                if len(tier_articles) < remaining:
+                    rem3 = remaining - len(tier_articles)
+                    try:
+                        mediastack_list = search_news_mediastack(
+                            kw,
+                            DATE_FROM,
+                            DATE_TO,
+                            language=lang,
+                            page_size=rem3,
+                        )
+                        tier_articles.extend(mediastack_list or [])
+                    except Exception as e:
+                        print(f"[WARN] MediaStack error (kw={kw}, lang={lang}): {e}")
+
+            # -----------------------------
+            # 3️⃣ 3순위: SerpAPI + Currents + NewsData.io
+            #    (그래도 부족할 때)
+            # -----------------------------
+            if len(tier_articles) < remaining:
+                rem4 = remaining - len(tier_articles)
+
+                # SerpAPI
+                try:
+                    serp_list = search_news_serpapi(
+                        kw,
+                        DATE_FROM,
+                        DATE_TO,
+                        language=lang,
+                        page_size=min(rem4, 10),
+                    )
+                    tier_articles.extend(serp_list or [])
+                except Exception as e:
+                    print(f"[WARN] SerpAPI error (kw={kw}, lang={lang}): {e}")
+
+                # Currents
+                if len(tier_articles) < remaining:
+                    rem5 = remaining - len(tier_articles)
+                    try:
+                        curr_list = search_news_currents(
+                            kw,
+                            DATE_FROM,
+                            DATE_TO,
+                            language=lang,
+                            page_size=min(rem5, 50),
+                        )
+                        tier_articles.extend(curr_list or [])
+                    except Exception as e:
+                        print(f"[WARN] Currents error (kw={kw}, lang={lang}): {e}")
+
+                # NewsData.io (기존 함수 재사용)
+                if len(tier_articles) < remaining:
+                    rem6 = remaining - len(tier_articles)
+                    try:
+                        newsdata_list = search_news_newsdata(
+                            kw,
+                            DATE_FROM,
+                            DATE_TO,
+                            language=lang,
+                            page_size=rem6,
+                        )
+                        tier_articles.extend(newsdata_list or [])
+                    except Exception as e:
+                        print(f"[WARN] NewsData.io error (kw={kw}, lang={lang}): {e}")
+
+            # 🆕 한글 키워드일 때 top-headlines 추가 수집
+            if lang == "ko" and any('\uac00' <= ch <= '\ud7a3' for ch in kw):
+                try:
+                    extra_kr = search_news_topheadlines_kr(page_size=10)
+                    # 키워드 필터링 (관련성 체크)
+                    for art in extra_kr:
+                        title_text = str(art.get('title', '')).lower()
+                        if any(k.lower() in title_text for k in kw.split()):
+                            tier_articles.append(art)
+                except Exception as e:
+                    print(f"[WARN] top-headlines 보강 실패: {e}")
+
+
+            # -----------------------------
+            # 공통 후처리: URL 중복 제거 + 날짜 필터 + 기본 필터
+            # -----------------------------
+            for a in tier_articles:
+                # 언어별 목표 개수 체크
+                if lang == "ko" and len(collected_ko) >= ARTICLES_PER_LANG_KO:
+                    break
+                if lang == "en" and len(collected_en) >= ARTICLES_PER_LANG_EN:
+                    break
+
+                url = a.get("url")
+                if not url or url in seen_urls:
+                    continue
+
+                published_at_raw = a.get("publishedAt")
+
+                # 1) published_at이 아예 없는 경우
+                if not published_at_raw:
+                    # ✅ 날짜 정보가 없으면 언어 구분 없이 오늘 날짜로 간주
+                    published_dt = datetime.fromisoformat(DATE_TO).date()
+                    # continue 제거 → 모든 언어 살림
+                else:
+                    # 2) 날짜 문자열이 이상한 경우를 대비한 try/except
+                    try:
+                        parsed = dateparser.parse(published_at_raw)
+                        if parsed is None:
+                            raise ValueError("parsed is None")
+                        published_dt = parsed.date()
+                    except Exception:
+                        # ✅ 파싱 실패 시 언어 구분 없이 오늘 날짜 사용
+                        published_dt = datetime.fromisoformat(DATE_TO).date()
+
+                # 3) 날짜 범위 필터 적용 (7일 범위)
+                from_dt = datetime.fromisoformat(DATE_FROM).date()
+                to_dt = datetime.fromisoformat(DATE_TO).date()
+                if not (from_dt <= published_dt <= to_dt):
+                    continue
+
+                # 4) 광고/튜토리얼 등 1차 필터
+                if not is_basic_newsworthy(a):
+                    continue
+
+                # 5) 최종 채택 (언어별 리스트에 추가)
+                seen_urls.add(url)
+                article_data = {
+                    "topic_seed": topic_id,
+                    "source_name": a.get("source", {}).get("name"),
+                    "author": a.get("author"),
+                    "original_title": a.get("title"),
+                    "description": a.get("description"),
+                    "content": a.get("content"),
+                    "url": url,
+                    "published_at": str(published_dt),
+                }
+                target_list.append(article_data)
+
+    # 최종 결과: 한글 + 영어 합치기
+    collected = collected_ko + collected_en
+    print(f"  └ 주제 {topic_id}: 한글 {len(collected_ko)}개, 영어 {len(collected_en)}개 수집됨")
+    return collected
+
+
+
+
+print("=== [1단계] NewsAPI에서 기사 수집 중 ===")
+
+raw_articles = []
+
+for t_id, kws in TOPIC_KEYWORDS.items():
+    arts = collect_articles_for_topic(t_id, kws)
+    print(f"주제 {t_id} ({TOPIC_DESC[t_id]}) : {len(arts)}개 기사 후보 수집")
+    raw_articles.extend(arts)
+
+
+df_raw = pd.DataFrame(raw_articles)
+print("\n[1차 수집 결과 개수] :", len(df_raw))
+if IN_COLAB:
+    display(df_raw.head())
+
+# ============================
+# 11. GitHub 자동 업로드 (Colab 전용)
+# ============================
+if IN_COLAB:
+    print("\n" + "=" * 70)
+    print("📤 GitHub에 코드 자동 업로드 중...")
+    print("=" * 70)
+
+    try:
+        import base64
+        from datetime import timezone, timedelta
+
+        # KST 정의
+        KST = timezone(timedelta(hours=9))
+        now_kst = datetime.now(KST)
+        timestamp_str = now_kst.strftime("%Y_%m_%d_%H_%M_%S")
+
+        # GitHub API 설정
+        GITHUB_OWNER = "hancom-inspace"
+        GITHUB_REPO = "Weekly-Newsletter"
+        GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
+
+        if not GITHUB_TOKEN:
+            print("❌ GITHUB_TOKEN이 설정되지 않았습니다.")
+        else:
+            # 🔥 핵심: IPython에서 실행된 모든 코드 수집
+            print("📝 실행된 코드 수집 중...")
+
+            from IPython import get_ipython
+            ip = get_ipython()
+
+            all_cells = []
+            In = ip.user_ns.get("In", [])
+
+            # --- 제거할 패턴 정의 ---
+            DROP_LINE_PATTERNS = [
+            ]
+            DROP_CELL_PATTERNS = [
+                "%%writefile",
+                "%writefile",
+            ]
+
+            def _sanitize_cell(cell_code: str) -> str:
+                """셀 단위 정리: writefile 매직/자동생성 라인 제거"""
+                if not cell_code:
+                    return ""
+
+                stripped = cell_code.strip()
+
+                # 셀 전체가 writefile 용도면 통째로 버림
+                for p in DROP_CELL_PATTERNS:
+                    if stripped.startswith(p):
+                        return ""
+
+                # 셀 내부에 섞여있는 writefile 관련 라인만 제거
+                cleaned_lines = []
+                for line in cell_code.splitlines():
+                    if any(p in line for p in DROP_LINE_PATTERNS):
+                        continue
+                    cleaned_lines.append(line)
+
+                return "\n".join(cleaned_lines).rstrip()
+
+            # In은 리스트이므로 인덱스로 접근
+            for i, cell_code in enumerate(In):
+                if i == 0:  # 첫 번째는 빈 문자열이므로 스킵
+                    continue
+                if cell_code and cell_code.strip():
+                    cleaned = _sanitize_cell(cell_code)
+                    if cleaned.strip():
+                        all_cells.append(cleaned)
+
+            # 전체 코드 결합
+            file_content = "\n\n".join(all_cells)
+
+            # 파일 크기 체크
+            file_size_mb = len(file_content.encode("utf-8")) / (1024 * 1024)
+            print(f"📦 수집된 코드: {len(all_cells)}개 셀, {file_size_mb:.2f} MB")
+
+            if len(file_content.strip()) == 0:
+                print("❌ 수집된 코드가 없습니다. 'In' 변수를 확인하세요.")
+            elif file_size_mb > 1:
+                print(f"⚠️ 파일이 너무 큽니다 ({file_size_mb:.2f}MB). 1MB 제한.")
+            else:
+                # Base64 인코딩
+                encoded_content = base64.b64encode(file_content.encode("utf-8")).decode("utf-8")
+
+                # GitHub API 헤더
+                headers = {
+                    "Authorization": f"token {GITHUB_TOKEN}",
+                    "Accept": "application/vnd.github.v3+json",
+                }
+
+                # 1️⃣ 메인 파일 업데이트 (newsletter.py)
+                print("\n📤 메인 파일 업로드 중...")
+                main_file_path = "newsletter.py"
+                main_url = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/contents/{main_file_path}"
+
+                # 기존 파일의 SHA 가져오기
+                response = requests.get(main_url, headers=headers)
+                if response.status_code == 200:
+                    sha = response.json()["sha"]
+                    print(f"✓ 기존 파일 발견 (SHA: {sha[:7]}...)")
+                else:
+                    sha = None
+                    print("✓ 새 파일 생성")
+
+                # 파일 업로드/업데이트
+                commit_message = f"Update newsletter.py - {now_kst.strftime('%Y-%m-%d %H:%M:%S')} KST"
+                payload = {
+                    "message": commit_message,
+                    "content": encoded_content,
+                }
+                if sha:
+                    payload["sha"] = sha
+
+                response = requests.put(main_url, headers=headers, json=payload)
+
+                if response.status_code in [200, 201]:
+                    print(f"✅ 메인 파일 업로드 성공: {main_file_path}")
+                    print(f"   파일 크기: {file_size_mb:.2f} MB")
+                else:
+                    print(f"❌ 메인 파일 업로드 실패: {response.status_code}")
+                    print(f"   응답: {response.text[:300]}")
+
+                # 2️⃣ 버전 폴더에 날짜별 파일 업로드
+                print("\n📤 버전 파일 업로드 중...")
+                version_file_path = f"versions/newsletter_{timestamp_str}.py"
+                version_url = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/contents/{version_file_path}"
+
+                # versions 폴더 확인
+                versions_check_url = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/contents/versions"
+                versions_response = requests.get(versions_check_url, headers=headers)
+                if versions_response.status_code == 404:
+                    print("📁 versions 폴더 생성 중...")
+                    gitkeep_url = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/contents/versions/.gitkeep"
+                    gitkeep_payload = {
+                        "message": "Create versions folder",
+                        "content": base64.b64encode(b"").decode("utf-8"),
+                    }
+                    requests.put(gitkeep_url, headers=headers, json=gitkeep_payload)
+                    time.sleep(1)
+
+                # 버전 파일 업로드
+                commit_message_version = f"Add version: newsletter_{timestamp_str}.py"
+                payload_version = {
+                    "message": commit_message_version,
+                    "content": encoded_content,
+                }
+
+                response_version = requests.put(version_url, headers=headers, json=payload_version)
+
+                if response_version.status_code in [200, 201]:
+                    print(f"✅ 버전 파일 업로드 성공: {version_file_path}")
+                else:
+                    print(f"❌ 버전 파일 업로드 실패: {response_version.status_code}")
+                    print(f"   응답: {response_version.text[:300]}")
+
+                print("\n" + "=" * 70)
+                print("🎉 GitHub 업로드 완료!")
+                print(f"📁 메인 파일: https://github.com/{GITHUB_OWNER}/{GITHUB_REPO}/blob/main/{main_file_path}")
+                print(f"📁 버전 파일: https://github.com/{GITHUB_OWNER}/{GITHUB_REPO}/blob/main/{version_file_path}")
+                print("=" * 70)
+
+    except Exception as e:
+        print(f"❌ GitHub 업로드 중 오류 발생: {e}")
+        import traceback
+
+        traceback.print_exc()
+else:
+    print("\n⚠️ GitHub 자동 업로드는 Colab 환경에서만 실행됩니다.")
