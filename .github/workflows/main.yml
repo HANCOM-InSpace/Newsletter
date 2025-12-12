@@ -2,8 +2,8 @@ name: Weekly Newsletter
 
 on:
   schedule:
-    - cron: '0 10 * * 4'  # 매주 목요일 오후 7시 (KST)
-  workflow_dispatch:  # 수동 실행 버튼 활성화
+    - cron: '50 0 * * 5'  # 목요일 오후 7시 KST
+  workflow_dispatch:  # 수동 실행
 
 jobs:
   generate-newsletter:
@@ -35,5 +35,5 @@ jobs:
         GMAIL_USER: ${{ secrets.GMAIL_USER }}
         GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
         TO_EMAIL: ${{ secrets.TO_EMAIL }}
-      run: |                                      # ✅ 올바른 위치!
-        python 뉴스레터_자동화.py
+      run: |
+        python newsletter.py
