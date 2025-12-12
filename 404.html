@@ -1,0 +1,225 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="5">
+    <title>페이지 생성 중... | 한컴인스페이스 뉴스레터</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            padding: 60px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 600px;
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .logo {
+            width: 120px;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 32px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .emoji {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .message {
+            color: #666;
+            font-size: 18px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+        
+        .spinner {
+            margin: 30px auto;
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .countdown {
+            font-size: 48px;
+            font-weight: 700;
+            color: #667eea;
+            margin: 20px 0;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .info {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #eee;
+            color: #999;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 40px 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .message {
+                font-size: 16px;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="https://static.wixstatic.com/media/0c4f16_e01d0bd6eede4ba1ab381b0517935070~mv2.png/v1/fill/w_124,h_49,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/logotype_vert_rgb_v2__w500.png"    
+             alt="한컴인스페이스 로고" 
+             class="logo">
+        
+        <div class="emoji">🚀</div>
+        
+        <h1>뉴스레터 페이지 생성 중...</h1>
+        
+        <div class="message">
+            <strong>잠시만 기다려주세요!</strong><br>
+            새로운 뉴스레터를 열심히 준비하고 있습니다.<br>
+            페이지가 곧 준비됩니다.
+        </div>
+        
+        <div class="spinner"></div>
+        
+        <div class="countdown" id="countdown">5</div>
+        
+        <div class="message">
+            초 후 자동으로 새로고침됩니다
+        </div>
+        
+        <div class="buttons">
+            <button class="btn btn-primary" onclick="location.reload()">
+                🔄 지금 새로고침
+            </button>
+            <a href="https://hancom-inspace.github.io/Weekly-Newsletter/" class="btn btn-secondary">
+                🏠 홈으로 이동
+            </a>
+        </div>
+        
+        <div class="info">
+            <p>💡 <strong>팁:</strong> 이 페이지가 계속 보인다면 홈으로 이동해보세요.</p>
+            <p>문제가 지속되면 <a href="mailto:support@hancom.com" style="color: #667eea;">support@hancom.com</a>으로 문의해주세요.</p>
+        </div>
+    </div>
+    
+    <script>
+        // 카운트다운
+        let count = 5;
+        const countdownEl = document.getElementById('countdown');
+        
+        const timer = setInterval(() => {
+            count--;
+            countdownEl.textContent = count;
+            
+            if (count <= 0) {
+                clearInterval(timer);
+                countdownEl.textContent = '새로고침 중...';
+            }
+        }, 1000);
+        
+        // 5초 후 현재 페이지 재시도
+        setTimeout(() => {
+            location.reload();
+        }, 5000);
+    </script>
+</body>
+</html>
