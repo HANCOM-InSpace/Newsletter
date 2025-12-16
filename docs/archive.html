@@ -224,7 +224,7 @@
 
               
           <div class="archive-card-insight">
-            이번 주에는 지리공간 정보와 위성 데이터가 전략적 인프라로 전환되는 흐름이 가속되며, AI 기반 분석과 글로벌 생태계 강화가 함께 나타나고 있습니다.
+            이번 주에는 지리공간 정보가 전략적 인프라로 전환되며 국가 안보와 AI 기반 민간 산업에서 부상하고 있습니다.
           </div>
         
 
@@ -514,18 +514,28 @@
     updateView();
 
     // =========================================================
-    // 2) 스크롤 → 배경 비디오 프레임(추가 코드)
+    // 2) 스크롤 → 배경 비디오 프레임 (옵션 A + 스무딩)
     // =========================================================
     var video = document.getElementById('bgVideo');
     if (!video) return;
 
-    // 스크롤 기반이므로 자동재생이 필수는 아니며, 멈춘 상태로 두고 currentTime만 이동
     try { video.pause(); } catch (e) {}
 
     var duration = 0;
     var ready = false;
 
-    function calcAndApply() {
+    // ✅ 옵션 A 파라미터
+    var SCRUB_PORTION = 0.25; // 0.20~0.45 추천
+    var EASE_GAMMA = 1.6;     // 1.2~2.2 추천
+
+    // ✅ 스무딩 파라미터 (값이 클수록 더 빨리 따라감)
+    var SMOOTHING = 0.12;     // 0.08~0.20 추천
+
+    var targetTime = 0;
+    var smoothTime = 0;
+    var animating = false;
+
+    function calcTargetTimeFromScroll() {
       if (!ready || !duration) return;
 
       var doc = document.documentElement;
@@ -536,51 +546,65 @@
       if (p < 0) p = 0;
       if (p > 1) p = 1;
 
-
-
-      // ✅ 옵션 A: 영상 일부 구간만 사용 + 초반 느리게(easing)
-      // - SCRUB_PORTION: 영상 전체 중 몇 %만 스크럽할지 (0.25~0.6 추천)
-      // - EASE_GAMMA: 1보다 크면 초반이 더 느려짐 (1.2~2.2 추천)
-    
-      var SCRUB_PORTION = 0.25;
-      var EASE_GAMMA = 1.6;
-
       var eased = Math.pow(p, EASE_GAMMA);
-      var t = eased * duration * SCRUB_PORTION;
+      targetTime = eased * duration * SCRUB_PORTION;
+    }
 
+    function applyTime(t) {
+      // 너무 작은 변화는 무시해서 디코더 부담을 줄임
+      var EPS = 0.02; // 20ms
+      if (Math.abs((video.currentTime || 0) - t) < EPS) return;
 
+      try {
+        if (typeof video.fastSeek === 'function') {
+          video.fastSeek(t);
+        } else {
+          video.currentTime = t;
+        }
+      } catch (e) {}
+    }
 
+    function animate() {
+      if (!animating) return;
 
-      try { video.currentTime = t; } catch (e) {}
+      smoothTime = smoothTime + (targetTime - smoothTime) * SMOOTHING;
+      applyTime(smoothTime);
+
+      window.requestAnimationFrame(animate);
+    }
+
+    function startAnimLoop() {
+      if (animating) return;
+      animating = true;
+      smoothTime = video.currentTime || 0;
+      window.requestAnimationFrame(animate);
     }
 
     function onMetaReady() {
       duration = video.duration || 0;
       ready = duration > 0;
-      calcAndApply(); // 진입 시 즉시 동기화
+
+      calcTargetTimeFromScroll();
+      startAnimLoop();
     }
 
     video.addEventListener('loadedmetadata', onMetaReady);
     if (video.readyState >= 1) onMetaReady();
 
-    var ticking = false;
     window.addEventListener(
       'scroll',
       function() {
-        if (ticking) return;
-        ticking = true;
-        window.requestAnimationFrame(function() {
-          ticking = false;
-          calcAndApply();
-        });
+        calcTargetTimeFromScroll();
+        startAnimLoop();
       },
       { passive: true }
     );
 
     window.addEventListener('resize', function() {
-      calcAndApply();
+      calcTargetTimeFromScroll();
     });
-  });
+
+
 
 </script>
 
