@@ -2946,7 +2946,7 @@ else:
 # 
 # # **08 카드/섹션 HTML + 최종 뉴스레터 HTML 생성**
 
-# In[88]:
+# In[98]:
 
 
 # ============================
@@ -4336,6 +4336,32 @@ def generate_weekly_focus_insight(
         print(f"[WARN] Weekly Focus Insight 생성 실패: {e}")
         return ""
 
+def to_paragraph_html_auto(text: str, target_paragraphs: int = 3) -> str:
+    text = (text or "").strip()
+    if not text:
+        return "<p style='margin:0;'>이번 주 포커스 인사이트를 생성하지 못했습니다.</p>"
+
+    # 1) 이미 빈 줄(문단 구분)이 있으면 그걸 우선 사용
+    if "\n\n" in text:
+        parts = [p.strip() for p in text.split("\n\n") if p.strip()]
+    else:
+        # 2) 빈 줄이 없으면 문장 단위로 대충 쪼개서 2~3문단으로 묶기
+        # - 마침표/물음표/느낌표 뒤 공백 기준
+        sents = [s.strip() for s in re.split(r"(?<=[\.!?])\s+", text) if s.strip()]
+
+        # 문장이 너무 적으면 그냥 1문단
+        if len(sents) <= 2:
+            parts = [text]
+        else:
+            # 목표 문단 수에 맞춰 균등 분배
+            chunk = max(2, (len(sents) + target_paragraphs - 1) // target_paragraphs)
+            parts = [" ".join(sents[i:i+chunk]) for i in range(0, len(sents), chunk)]
+
+    # 3) 각 문단을 <p>로 감싸기 (escape 처리 포함)
+    return "".join(
+        f"<p style='margin:0 0 10px 0; line-height:1.75;'>{h(p)}</p>"
+        for p in parts
+    )
 
 # =========================
 # ✅ Archive 카드용 1줄 Insight 생성
@@ -5020,11 +5046,13 @@ weekly_focus_insight = generate_weekly_focus_insight(
     research_main_articles, research_extra_articles
 )
 
+weekly_focus_body_html = to_paragraph_html_auto(weekly_focus_insight, target_paragraphs=3)
+
 weekly_focus_html = f"""
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
   <tr><td align="center">
     <table cellpadding="0" cellspacing="0" border="0"
-           style="width:100%; max-width:{CONTENT_WIDTH}px;
+           style="width:100%; max-width: {CONTENT_WIDTH}px;
                   border:1px solid #e5e7eb;
                   border-radius:12px;
                   overflow:hidden;
@@ -5046,9 +5074,8 @@ weekly_focus_html = f"""
             </div>
 
             <div style="font-size:14px; color:#374151; line-height:1.7; font-weight:500;
-                        padding-top:3px; white-space:pre-line;
-                        word-break: keep-all; overflow-wrap: break-word;">
-              {h(weekly_focus_insight) if weekly_focus_insight else "이번 주 포커스 인사이트를 생성하지 못했습니다."}
+                        padding-top:10px; word-break: keep-all; overflow-wrap: break-word;">
+              {weekly_focus_body_html if weekly_focus_insight else "이번 주 포커스 인사이트를 생성하지 못했습니다."}
             </div>
 
           </div>
@@ -5484,7 +5511,7 @@ for topic_num, url in TOPIC_MORE_URLS.items():
 # # **09 이메일 자동 발송**
 # ### **(Colab에서 실행하면 테스트 이메일로, Github 실행 시, 실제 수신자에게)**
 
-# In[89]:
+# In[99]:
 
 
 SEND_EMAIL = os.environ.get("SEND_EMAIL", "true").lower() == "true"
@@ -5537,7 +5564,7 @@ else:
 
 # # **10. 최종 통계 출력**
 
-# In[90]:
+# In[100]:
 
 
 # ============================
