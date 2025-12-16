@@ -7,7 +7,7 @@
 # ![image.png](data:image/png;base64,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)
 # 
 
-# # **01 설치 & import**
+# # **01-1 설치 & import**
 
 # In[11]:
 
@@ -42,6 +42,8 @@ if IN_COLAB:
 
     print("✅ Colab Secrets에서 API 키 로드 완료")
 
+
+# # **01-2 라이브러리 설치**
 
 # In[12]:
 
@@ -83,7 +85,7 @@ from email.mime.text import MIMEText
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
-# # **02 설정 (API 키, 날짜, 주제, 키워드, 상수)**
+# # **02-1 설정 (API 키)**
 
 # In[13]:
 
@@ -104,6 +106,8 @@ CURRENTS_API_KEY = os.environ.get("CURRENTS_API_KEY")
 NEWSDATA_BASE_URL_LATEST = "https://newsdata.io/api/1/latest"
 
 
+
+# # **02-2 설정 (날짜, 주제, 키워드, 상수)**
 
 # In[14]:
 
@@ -2942,7 +2946,7 @@ else:
 # 
 # # **08 카드/섹션 HTML + 최종 뉴스레터 HTML 생성**
 
-# In[32]:
+# In[36]:
 
 
 # ============================
@@ -4936,9 +4940,9 @@ weekly_focus_html = f"""
                   background:#ffffff; border:1px solid #e5e7eb;
                   border-radius:12px; padding:18px; box-sizing:border-box;">
       <tr><td style="font-size:14px; font-weight:800; color:#111827;">
-        {WEEKLY_FOCUS_TITLE}
+        {WEEKLY_FOCUS_TITLE} 🔍
       </td></tr>
-      <tr><td style="font-size:14px; color:#374151; line-height:1.7; padding-top:5px; white-space:pre-line; word-break: keep-all; overflow-wrap: break-word;">
+      <tr><td style="font-size:14px; color:#374151; line-height:1.7; padding-top:2px; white-space:pre-line; word-break: keep-all; overflow-wrap: break-word;">
         {h(weekly_focus_insight) if weekly_focus_insight else "이번 주 포커스 인사이트를 생성하지 못했습니다."}
       </td></tr>
     </table>
@@ -5341,7 +5345,7 @@ for topic_num, url in TOPIC_MORE_URLS.items():
 # # **09 이메일 자동 발송**
 # ### **(Colab에서 실행하면 테스트 이메일로, Github 실행 시, 실제 수신자에게)**
 
-# In[33]:
+# In[37]:
 
 
 SEND_EMAIL = os.environ.get("SEND_EMAIL", "true").lower() == "true"
@@ -5394,7 +5398,7 @@ else:
 
 # # **10. 최종 통계 출력**
 
-# In[34]:
+# In[38]:
 
 
 # ============================
@@ -5682,10 +5686,4 @@ if _in_colab():
 else:
     # Colab이 아닌 환경(예: GitHub Actions)에서는 아무 것도 하지 않음
     pass
-
-
-# In[ ]:
-
-
-
 
