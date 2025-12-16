@@ -2946,7 +2946,7 @@ else:
 # 
 # # **08 카드/섹션 HTML + 최종 뉴스레터 HTML 생성**
 
-# In[59]:
+# In[88]:
 
 
 # ============================
@@ -5025,18 +5025,41 @@ weekly_focus_html = f"""
   <tr><td align="center">
     <table cellpadding="0" cellspacing="0" border="0"
            style="width:100%; max-width:{CONTENT_WIDTH}px;
-                  background:#ffffff; border:1px solid #e5e7eb;
-                  border-radius:12px; padding:18px; box-sizing:border-box;">
-      <tr><td style="font-size:14px; font-weight:800; color:#111827;">
-        {WEEKLY_FOCUS_TITLE}
-      </td></tr>
-      <tr><td style="font-size:14px; color:#374151; line-height:1.7; padding-top:2px; white-space:pre-line; word-break: keep-all; overflow-wrap: break-word;">
-        {h(weekly_focus_insight) if weekly_focus_insight else "이번 주 포커스 인사이트를 생성하지 못했습니다."}
-      </td></tr>
+                  border:1px solid #e5e7eb;
+                  border-radius:12px;
+                  overflow:hidden;
+                  box-sizing:border-box;">
+      <tr>
+        <td style="
+            background-image:url('https://hancom-inspace.github.io/Weekly-Newsletter/assets/insightcard1.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat:no-repeat;
+            padding:0;">
+
+          <!-- 가독성 오버레이 -->
+          <div style="background:rgba(255,255,255,0.83);
+                      padding:15px;">
+
+            <div style="font-size:20px; font-weight:800; color:#111827;">
+              {WEEKLY_FOCUS_TITLE}
+            </div>
+
+            <div style="font-size:14px; color:#374151; line-height:1.7; font-weight:500;
+                        padding-top:3px; white-space:pre-line;
+                        word-break: keep-all; overflow-wrap: break-word;">
+              {h(weekly_focus_insight) if weekly_focus_insight else "이번 주 포커스 인사이트를 생성하지 못했습니다."}
+            </div>
+
+          </div>
+
+        </td>
+      </tr>
     </table>
   </td></tr>
 </table>
 """
+
 
 
 # 날짜 범위 계산 (기존 로직 유지)
@@ -5267,21 +5290,32 @@ newsletter_html = f"""
           <td class="inner-padding" style="padding:0 16px 0 16px;">
 
             <!-- 이전 뉴스레터 보기 버튼 -->
-            <table width="100%" cellpadding="0" cellspacing="0" border="0"
-                  style="margin-bottom:24px;">
-              <tr><td>
-                <a href="{ARCHIVE_PAGE_URL}"
-                  style="display:block; text-decoration:none; border-radius:12px;
-                          border:1px solid #e5e7eb; padding:16px 18px;
-                          background:#f9fafb;">
-                  <div style="font-size:14px; color:#4b5563; margin-bottom:4px;">
-                    아카이브
-                  </div>
-                  <div style="font-size:16px; font-weight:600; color:#111827;">
-                    이전 뉴스레터 다시 보기 →
-                  </div>
-                </a>
-              </td></tr>
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+              <tr>
+                <td
+                  style="border-radius:12px;
+                        overflow:hidden;
+                        border:1px solid #e5e7eb;
+                        background-image:url('https://hancom-inspace.github.io/Weekly-Newsletter/assets/archivebutton.png');
+                        background-size:cover;
+                        background-position:center;
+                        background-repeat:no-repeat;">
+
+                  <a href="{ARCHIVE_PAGE_URL}"
+                    style="display:block; text-decoration:none; color:inherit;">
+
+                    <div style="background:rgba(0,0,0,0.45); padding:20px 18px;">
+                      <div style="font-size:14px; font-weight:600; color:#e5e7eb; margin-bottom:4px;">
+                        아카이브
+                      </div>
+                      <div style="font-size:16px; font-weight:600; color:#ffffff;">
+                        이전 뉴스레터 다시 보기 →
+                      </div>
+                    </div>
+
+                  </a>
+                </td>
+              </tr>
             </table>
 
             {weekly_focus_html}
@@ -5450,7 +5484,7 @@ for topic_num, url in TOPIC_MORE_URLS.items():
 # # **09 이메일 자동 발송**
 # ### **(Colab에서 실행하면 테스트 이메일로, Github 실행 시, 실제 수신자에게)**
 
-# In[60]:
+# In[89]:
 
 
 SEND_EMAIL = os.environ.get("SEND_EMAIL", "true").lower() == "true"
@@ -5503,7 +5537,7 @@ else:
 
 # # **10. 최종 통계 출력**
 
-# In[61]:
+# In[90]:
 
 
 # ============================
