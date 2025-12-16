@@ -2946,7 +2946,7 @@ else:
 # 
 # # **08 카드/섹션 HTML + 최종 뉴스레터 HTML 생성**
 
-# In[36]:
+# In[40]:
 
 
 # ============================
@@ -4181,7 +4181,7 @@ def build_research_more_page_html(extra_articles, date_range, newsletter_date):
 # - 출력: 1~3줄 한국어 조언(문장형)
 # ============================================================
 
-WEEKLY_FOCUS_TITLE = "Weekly Focus Insight"
+WEEKLY_FOCUS_TITLE = "Weekly Focus Insight 🔍"
 MAX_INSIGHT_ITEMS_PER_TOPIC = 10
 MAX_INSIGHT_ITEMS_RESEARCH = 10
 
@@ -4940,7 +4940,7 @@ weekly_focus_html = f"""
                   background:#ffffff; border:1px solid #e5e7eb;
                   border-radius:12px; padding:18px; box-sizing:border-box;">
       <tr><td style="font-size:14px; font-weight:800; color:#111827;">
-        {WEEKLY_FOCUS_TITLE} 🔍
+        {WEEKLY_FOCUS_TITLE}
       </td></tr>
       <tr><td style="font-size:14px; color:#374151; line-height:1.7; padding-top:2px; white-space:pre-line; word-break: keep-all; overflow-wrap: break-word;">
         {h(weekly_focus_insight) if weekly_focus_insight else "이번 주 포커스 인사이트를 생성하지 못했습니다."}
@@ -5345,7 +5345,7 @@ for topic_num, url in TOPIC_MORE_URLS.items():
 # # **09 이메일 자동 발송**
 # ### **(Colab에서 실행하면 테스트 이메일로, Github 실행 시, 실제 수신자에게)**
 
-# In[37]:
+# In[41]:
 
 
 SEND_EMAIL = os.environ.get("SEND_EMAIL", "true").lower() == "true"
@@ -5398,7 +5398,7 @@ else:
 
 # # **10. 최종 통계 출력**
 
-# In[38]:
+# In[42]:
 
 
 # ============================
