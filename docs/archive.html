@@ -69,6 +69,20 @@
     transition:background 0.18s ease, border-color 0.18s ease, transform 0.12s ease, box-shadow 0.12s ease;
   }
 
+  /* ✅ Weekly Focus Insight(아카이브 카드용) */
+  .archive-card-insight {
+    font-size:13px;
+    line-height:1.45;
+    color:#cbd5e1;
+    margin:6px 0 8px 0;
+    opacity:0.92;
+
+    display:-webkit-box;
+    -webkit-line-clamp:2;        /* 2줄 제한 */
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+
   .chip-base:hover {
     background:rgba(30,64,175,0.7);
     border-color:#60a5fa;
@@ -158,18 +172,15 @@
           </td>
         </tr>
 
-        <!-- 필터 영역 -->
         <tr>
           <td>
             <div class="filter-wrap">
               <div id="year-chips" class="chips-row"></div>
-
               <div id="month-chips" class="chips-row"></div>
             </div>
           </td>
         </tr>
 
-        <!-- 카드 리스트 -->
         <tr>
           <td style="padding:4px 16px 8px 16px;">
             <table width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -181,6 +192,9 @@
               <div class="archive-card-label">
                 12월 3주차 뉴스레터
               </div>
+
+              
+
               <div class="archive-card-date">
                 업로드: 2025.12.16
               </div>
@@ -195,6 +209,9 @@
               <div class="archive-card-label">
                 12월 3주차 뉴스레터
               </div>
+
+              
+
               <div class="archive-card-date">
                 업로드: 2025.12.15
               </div>
@@ -209,6 +226,9 @@
               <div class="archive-card-label">
                 12월 2주차 뉴스레터
               </div>
+
+              
+
               <div class="archive-card-date">
                 업로드: 2025.12.12
               </div>
@@ -223,6 +243,9 @@
               <div class="archive-card-label">
                 12월 2주차 뉴스레터
               </div>
+
+              
+
               <div class="archive-card-date">
                 업로드: 2025.12.11
               </div>
@@ -237,6 +260,9 @@
               <div class="archive-card-label">
                 12월 2주차 뉴스레터
               </div>
+
+              
+
               <div class="archive-card-date">
                 업로드: 2025.12.10
               </div>
@@ -251,6 +277,9 @@
               <div class="archive-card-label">
                 12월 2주차 뉴스레터
               </div>
+
+              
+
               <div class="archive-card-date">
                 업로드: 2025.12.09
               </div>
@@ -265,6 +294,9 @@
               <div class="archive-card-label">
                 12월 2주차 뉴스레터
               </div>
+
+              
+
               <div class="archive-card-date">
                 업로드: 2025.12.08
               </div>
@@ -279,6 +311,9 @@
               <div class="archive-card-label">
                 12월 1주차 뉴스레터
               </div>
+
+              
+
               <div class="archive-card-date">
                 업로드: 2025.12.05
               </div>
@@ -302,11 +337,8 @@
 
     if (!rows.length || !yearContainer || !monthContainer) return;
 
-    // -----------------------------
-    // 1) 연도 / 연도별 존재 월 수집
-    // -----------------------------
     var yearSet = new Set();
-    var yearMonthMap = {}; // { '2025': Set{12, 11, ...}, ... }
+    var yearMonthMap = {};
 
     rows.forEach(function(row) {
       var y = row.getAttribute('data-year');
@@ -323,9 +355,8 @@
       }
     });
 
-    var years = Array.from(yearSet).sort(); // 연도 순서 정리
+    var years = Array.from(yearSet).sort();
 
-    // 현재 날짜 기준 기본 선택
     var today = new Date();
     var currentYear = String(today.getFullYear());
 
@@ -334,12 +365,8 @@
       month: null
     };
 
-    // 처음에는 월칩 숨김
     monthContainer.style.display = 'none';
 
-    // -----------------------------
-    // 2) 칩 생성 함수들
-    // -----------------------------
     function createYearChip(value, label) {
       var btn = document.createElement('button');
       btn.type = 'button';
@@ -402,9 +429,6 @@
       monthContainer.style.display = 'flex';
     }
 
-    // -----------------------------
-    // 3) 화면 업데이트
-    // -----------------------------
     function updateView() {
       rows.forEach(function(row) {
         var rowYear = row.getAttribute('data-year');
@@ -421,11 +445,7 @@
           monthMatch = (rowMonth === state.month);
         }
 
-        if (yearMatch && monthMatch) {
-          row.style.display = '';
-        } else {
-          row.style.display = 'none';
-        }
+        row.style.display = (yearMatch && monthMatch) ? '' : 'none';
       });
 
       var yearChips = document.querySelectorAll('.year-chip');
@@ -442,9 +462,6 @@
       });
     }
 
-    // -----------------------------
-    // 4) 초기 칩 구성
-    // -----------------------------
     var allYearChip = createYearChip('all', '전체');
     yearContainer.appendChild(allYearChip);
 
@@ -461,7 +478,6 @@
     updateView();
   });
 </script>
-
 
 </body>
 </html>
