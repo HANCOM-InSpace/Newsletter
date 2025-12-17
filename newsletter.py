@@ -5467,7 +5467,7 @@ newsletter_html = f"""
                       <div style="font-size:14px; font-weight:600; color:#000000; margin-bottom:4px;">
                         아카이브
                       </div>
-                      <div style="font-size:16px; font-weight:600; color:#000000;">
+                      <div style="font-size:18px; font-weight:700; color:#000000;">
                         이전 뉴스레터 다시 보기 →
                       </div>
                     </div>
