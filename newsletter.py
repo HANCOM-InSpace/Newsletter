@@ -5205,7 +5205,7 @@ weekly_focus_html = f"""
               {WEEKLY_FOCUS_TITLE}
             </div>
 
-            <div style="font-size:14px; color:#000000; line-height:1.7; font-weight:500;
+            <div style="font-size:14px; color:#000000; line-height:1.7; font-weight:600;
                         padding-top:10px; word-break: keep-all; overflow-wrap: break-word;">
               {weekly_focus_body_html if weekly_focus_insight else "이번 주 포커스 인사이트를 생성하지 못했습니다."}
             </div>
@@ -5464,7 +5464,7 @@ newsletter_html = f"""
                     style="display:block; text-decoration:none; color:inherit;">
 
                     <div style="background:rgba(255,255,255,0.70); padding:20px 18px;">
-                      <div style="font-size:14px; font-weight:600; color:#000000; margin-bottom:4px;">
+                      <div style="font-size:14px; font-weight:700; color:#000000; margin-bottom:4px;">
                         아카이브
                       </div>
                       <div style="font-size:18px; font-weight:700; color:#000000;">
