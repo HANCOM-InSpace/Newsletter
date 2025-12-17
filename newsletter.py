@@ -5025,7 +5025,7 @@ ARCHIVE_PAGE_PATH = "docs/archive.html"
 ARCHIVE_PAGE_URL = f"{BASE_URL}/archive.html"
 
 # ▼ 아카이브 상단 스크롤 비디오(mp4) 경로 (여기에 네 영상 URL 넣기)
-ARCHIVE_VIDEO_URL = "https://hancom-inspace.github.io/Weekly-Newsletter/assets/archivebgvideo.mp4"
+ARCHIVE_VIDEO_URL = "https://hancom-inspace.github.io/Weekly-Newsletter/assets/archivebg1.mp4"
 
 # ▼ 아카이브 데이터를 JSON 파일로도 관리 (매번 깃허브 폴더를 읽어서 갱신)
 ARCHIVE_JSON_PATH = "docs/archive.json"
