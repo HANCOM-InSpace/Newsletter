@@ -5191,14 +5191,14 @@ weekly_focus_html = f"""
                   box-sizing:border-box;">
       <tr>
         <td style="
-            background-image:url('https://hancom-inspace.github.io/Weekly-Newsletter/assets/insightcard1.png');
+            background-image:url('https://hancom-inspace.github.io/Weekly-Newsletter/assets/insightcard2.png');
             background-size: cover;
             background-position: center;
             background-repeat:no-repeat;
             padding:0;">
 
           <!-- 가독성 오버레이 -->
-          <div style="background:rgba(255,255,255,0.85);
+          <div style="background:rgba(255,255,255,0.65);
                       padding:15px;">
 
             <div style="font-size:20px; font-weight:800; color:#111827;">
@@ -5463,7 +5463,7 @@ newsletter_html = f"""
                   <a href="{ARCHIVE_PAGE_URL}"
                     style="display:block; text-decoration:none; color:inherit;">
 
-                    <div style="background:rgba(0,0,0,0.45); padding:20px 18px;">
+                    <div style="background:rgba(255,255,255,0.70); padding:20px 18px;">
                       <div style="font-size:14px; font-weight:600; color:#e5e7eb; margin-bottom:4px;">
                         아카이브
                       </div>
