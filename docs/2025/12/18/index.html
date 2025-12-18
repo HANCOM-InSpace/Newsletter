@@ -71,6 +71,33 @@
     .main-bg-video { display: none !important; }
     .main-bg-image { display: block !important; }
   }
+
+    /* 푸터를 항상 아래로 밀어주는 레이아웃 (iOS 100vh 이슈 대응) */
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+
+    /* fallback → iOS 대응 순서 (지원되는 최신 단위를 마지막에 둠) */
+    min-height: 100vh;
+    min-height: 100svh; /* iOS Safari 주소창 포함 계산 방지(안정형 viewport) */
+    min-height: 100dvh; /* 최신 브라우저 동적 viewport */
+
+    background: #f3f4f6;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo","맑은 고딕", system-ui, sans-serif;
+  }
+
+  .content-wrapper {
+    flex: 1 0 auto;
+  }
+
+  .footer-wrap {
+    flex-shrink: 0;
+  }
 </style>
 
 
@@ -248,7 +275,7 @@
 
             <div style="font-size:14px; color:#000000; line-height:1.7; font-weight:500;
                         padding-top:10px; word-break: keep-all; overflow-wrap: break-word;">
-              <p style='margin:0 0 10px 0; line-height:1.75;'>이번 주 지리공간 정보와 원격탐사 기술의 발전은 단순한 데이터 수집을 넘어 전략적 자산으로서의 전환을 가속화하고 있음을 보여줍니다. 예컨대, 산청군의 우수사례 수상과 인도 마하라슈트라 주정부의 GIS 기반 학교 위치 등록 의무화는 지리공간 정보가 지역 행정과 인프라 거버넌스의 핵심 도구에서 필수 인프라로 자리매김하고 있음을 시사합니다.</p><p style='margin:0 0 10px 0; line-height:1.75;'>동시에, 고산 아시아 지역 눈 밀도 분석과 미국 고위험 댐 지반 침하 감지 연구에서는 위성 및 레이더 기반 원격탐사 데이터가 기후변화와 재난 대응의 과학적 근거를 제공하며, 이는 환경 및 안전 거버넌스 체계의 혁신적 전환을 촉진합니다. 이러한 흐름은 위성 영상의 법의학적 활용과 군사 작전 평가, 그리고 AI 결합을 통한 고도화된 위성 데이터 분석으로 확장되며, 지리공간 정보가 단순한 기술 도구를 넘어 국제법 집행과 국가 안보 전략의 핵심 인프라로 자리잡는 변화를 의미합니다.</p><p style='margin:0 0 10px 0; line-height:1.75;'>따라서 지리공간 정보와 원격탐사 기술은 기후·재난·안보·행정 전 분야에서 운영적 도구에서 전략적 거버넌스로 진화하며, 이로 인해 관련 산업과 정책 환경 전반에 걸친 통합적 혁신이 가속화될 것으로 전망됩니다.</p>
+              <p style='margin:0 0 10px 0; line-height:1.75;'>이번 주 지리공간 정보와 원격탐사 기술의 발전은 단순한 데이터 수집을 넘어 전략적 자산으로서의 전환을 가속화하고 있습니다. 산청군의 공간정보 우수사례 수상과 인도네시아 국가 위기 센터 설립, 마하라슈트라 주정부의 GIS 기반 학교 위치 등록 의무화는 지리공간 정보가 지역 행정과 재난 대응의 핵심 인프라로 자리 잡았음을 보여줍니다.</p><p style='margin:0 0 10px 0; line-height:1.75;'>이러한 흐름은 위성 원격탐사 기술이 국제법적 책임 추궁과 군사 감시, 환경 모니터링에까지 확장되면서, 공간 데이터가 단순한 운영 도구를 넘어 거버넌스와 법적 판단의 기반으로 기능하는 변화를 촉진하고 있습니다. 더불어, 딥러닝 기반 그래프 신경망과 파운데이션 모델의 도입, AI 통합 위성 영상 분석 시스템 개발은 공간 데이터 과학의 정확도와 효율성을 혁신적으로 높여, 위성 영상과 지리공간 정보가 전략적 의사결정과 정책 수립에 필수적인 인프라로 자리매김하는 결과를 낳고 있습니다.</p>
             </div>
 
           </div>
@@ -1354,8 +1381,9 @@
 </table>
 
 <!-- 푸터 -->
-<table width="100%" cellpadding="0" cellspacing="0" border="0"
+<table class="footer-wrap" width="100%" cellpadding="0" cellspacing="0" border="0"
        style="background:#1e293b; padding:24px 0 32px 0;">
+
   <tr>
     <td align="center">
       <table cellpadding="0" cellspacing="0" border="0"
