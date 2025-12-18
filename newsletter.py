@@ -9,7 +9,7 @@
 
 # # **01-1 설치 & import**
 
-# In[1]:
+# In[17]:
 
 
 # ============================
@@ -49,7 +49,7 @@ if IN_COLAB:
 
 # # **01-2 라이브러리 설치**
 
-# In[2]:
+# In[18]:
 
 
 # ============================
@@ -93,7 +93,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # # **02-1 설정 (API 키)**
 
-# In[3]:
+# In[19]:
 
 
 # ============================================================
@@ -118,7 +118,7 @@ NEWSDATA_BASE_URL_LATEST = "https://newsdata.io/api/1/latest"
 
 # # **02-2 설정 (날짜, 주제, 키워드, 상수)**
 
-# In[4]:
+# In[20]:
 
 
 # 사용할 GPT mini 모델 이름 (예: "gpt-4.1-mini", 나중에 "gpt-5.1-mini"로 교체 가능)
@@ -154,24 +154,33 @@ CONTENT_WIDTH = 700
 # ============================
 # KST 시간대 정의
 KST = timezone(timedelta(hours=9))
-
-# 현재 KST 시간 기준
 now_kst = datetime.now(KST)
-today_kst = now_kst.date()
 
-# 검색 범위: KST 기준 7일 전 00:00:00 ~ 오늘 23:59:59
-seven_days_ago_kst = today_kst - timedelta(days=7)
+# 기준일 (실행일)
+anchor_date = now_kst.date()
 
-# KST 날짜를 UTC datetime으로 변환 (API는 UTC 필요)
-date_from_utc = datetime.combine(seven_days_ago_kst, datetime.min.time()).replace(tzinfo=KST).astimezone(timezone.utc)
-date_to_utc = datetime.combine(today_kst, datetime.max.time()).replace(tzinfo=KST).astimezone(timezone.utc)
+# 수집 종료일: 전날
+end_date_kst = anchor_date - timedelta(days=1)
+
+# 수집 시작일: 종료일 기준 6일 전
+start_date_kst = end_date_kst - timedelta(days=6)
+
+# KST → UTC 변환
+date_from_utc = datetime.combine(
+    start_date_kst, datetime.min.time()
+).replace(tzinfo=KST).astimezone(timezone.utc)
+
+date_to_utc = datetime.combine(
+    end_date_kst, datetime.max.time()
+).replace(tzinfo=KST).astimezone(timezone.utc)
 
 DATE_FROM = date_from_utc.strftime("%Y-%m-%d")
-DATE_TO = date_to_utc.strftime("%Y-%m-%d")
+DATE_TO   = date_to_utc.strftime("%Y-%m-%d")
+
 
 print("=" * 60)
 print(f"🕐 현재 KST 시간: {now_kst.strftime('%Y-%m-%d %H:%M:%S')}")
-print(f"📅 검색 범위 (KST): {seven_days_ago_kst} ~ {today_kst}")
+print(f"📅 검색 범위 (KST): {start_date_kst} ~ {end_date_kst}")
 print(f"📅 검색 범위 (UTC): {DATE_FROM} ~ {DATE_TO}")
 print("=" * 60)
 
@@ -196,7 +205,7 @@ TOPIC_ICON = {
     4: "🛰️",   # 위성영상
 }
 
-# 영어 + 한글 키워드 혼합 (✅ 정리본)
+# 영어 + 한글 키워드 혼합 (✅ 정리본 + 한글 보강)
 TOPIC_KEYWORDS = {
     1: [
         # GeoINT / Geospatial / GIS / Location Intelligence
@@ -205,12 +214,22 @@ TOPIC_KEYWORDS = {
         "geospatial data", "geospatial mapping",
         "GIS platform", "geospatial security",
         "OSINT geospatial", "satellite intelligence",
+        "geospatial surveillance", "geospatial AI",
+        "spatial analytics", "geospatial platform",
+        "GIS software", "geospatial data platform",
+        "digital twin GIS", "smart city GIS",
 
-        "지리공간 정보", "공간정보",
-        "지리정보시스템", "GIS 플랫폼",
-        "위치 기반 서비스", "공간 데이터",
-        "지도 서비스", "국토정보",
-        "측량 기술",
+        # KR 보강
+        "지리공간 정보", "지리공간정보", "공간정보",
+        "공간정보산업", "공간정보시스템", "지리정보시스템",
+        "GIS", "GIS 플랫폼", "공간 분석", "공간분석",
+        "지리공간 데이터", "공간 데이터", "공간데이터",
+        "위치 기반 서비스", "위치기반 서비스", "위치정보",
+        "지도 서비스", "지도 데이터", "국토정보",
+        "국토지리정보", "국토지리정보원",
+        "측량", "측량 기술", "지적", "디지털 트윈", "디지털트윈",
+        "스마트시티", "공간 빅데이터", "공간빅데이터",
+        "오픈소스 GIS",
     ],
 
     2: [
@@ -220,14 +239,26 @@ TOPIC_KEYWORDS = {
         "urban air mobility", "UAM",
         "drone regulation", "BVLOS drone",
         "autonomous drone",
-
         "drone delivery", "drone inspection",
         "drone surveillance",
+        "drone traffic management", "UTM",
+        "counter drone", "anti-drone",
+        "eVTOL", "AAM",
+        "drone swarm", "drone security",
 
-        "드론 산업", "무인기",
-        "도심 항공 모빌리티", "UAM 규제",
-        "드론 규제", "드론 배송",
-        "드론 점검", "드론 방산",
+        # KR 보강
+        "드론", "드론 산업", "드론산업",
+        "무인기", "무인항공기", "무인항공",
+        "UAV", "UAS",
+        "도심 항공 모빌리티", "도심항공모빌리티",
+        "UAM 규제", "UAM", "AAM", "미래항공모빌리티",
+        "드론 규제", "드론 안전", "드론 인증",
+        "BVLOS", "시계외 비행", "시계외비행",
+        "드론 배송", "드론택배",
+        "드론 점검", "드론 검사", "시설물 점검 드론",
+        "드론 감시", "드론 정찰", "드론 방산", "드론 방어",
+        "드론 관제", "드론교통관리", "UTM",
+        "K-드론", "드론 실증", "드론특별자유화",
     ],
 
     3: [
@@ -241,16 +272,23 @@ TOPIC_KEYWORDS = {
         "vector database", "feature store",
         "model deployment", "model serving",
         "AI infrastructure", "AI cloud platform",
+        "data lakehouse", "data lake", "data warehouse",
+        "data pipeline", "orchestration",
+        "model monitoring", "model governance",
 
-        "AI 데이터 플랫폼", "데이터 분석 플랫폼",
-        "MLOps",
-        "엔터프라이즈 AI", "기업용 AI",
-        "생성형 AI 플랫폼", "LLM 플랫폼",
-        "RAG 플랫폼",
-        "벡터 데이터베이스",
-        "모델 배포", "모델 서빙",
-        "AI 인프라", "AI 클라우드 플랫폼",
-        "AI 업무 자동화", "디지털 전환",
+        # KR 보강
+        "AI 데이터 플랫폼", "데이터 분석 플랫폼", "분석 플랫폼",
+        "데이터 레이크", "데이터레이크", "레이크하우스", "데이터 웨어하우스", "데이터웨어하우스",
+        "데이터 파이프라인", "데이터파이프라인", "ETL", "ELT", "워크플로 오케스트레이션",
+        "MLOps", "LLMOps", "모델옵스",
+        "엔터프라이즈 AI", "기업용 AI", "업무용 AI",
+        "생성형 AI", "생성형AI", "생성형 AI 플랫폼", "LLM 플랫폼",
+        "RAG", "RAG 플랫폼", "검색증강생성",
+        "벡터 데이터베이스", "벡터DB", "임베딩", "피처 스토어", "특성 저장소",
+        "모델 배포", "모델서빙", "모델 서빙",
+        "모델 모니터링", "모델 거버넌스", "AI 거버넌스",
+        "AI 인프라", "AI 클라우드 플랫폼", "GPU 인프라",
+        "AI 업무 자동화", "디지털 전환", "DX",
     ],
 
     4: [
@@ -263,16 +301,25 @@ TOPIC_KEYWORDS = {
         "satellite data analytics",
         "commercial satellite imagery",
         "remote sensing analytics",
+        "synthetic aperture radar", "SAR imagery",
+        "multispectral imagery", "hyperspectral imagery",
+        "change detection satellite", "satellite image segmentation",
 
-        "위성 영상", "위성영상 분석",
-        "위성 이미지 분석",
-        "SAR 위성", "광학 위성 영상",
-        "하이퍼스펙트럴 영상",
-        "지구관측", "원격탐사",
-        "위성 데이터", "위성 데이터 플랫폼",
-        "위성 서비스",
+        # KR 보강
+        "위성 영상", "위성영상", "위성영상 분석", "위성 영상 분석",
+        "위성영상 처리", "위성 이미지", "위성 이미지 분석",
+        "지구관측", "지구 관측", "지구관측 데이터", "EO", "지구관측 위성",
+        "원격탐사", "원격 탐사", "원격탐사 데이터",
+        "SAR", "SAR 위성", "합성개구레이다", "합성개구 레이더", "레이더 위성",
+        "광학 위성", "광학 위성 영상", "광학위성",
+        "초분광", "하이퍼스펙트럴", "하이퍼스펙트럴 영상", "초분광 영상",
+        "다중분광", "멀티스펙트럴", "다중분광 영상",
+        "위성 데이터", "위성데이터", "위성 데이터 분석", "위성데이터 분석",
+        "위성 데이터 플랫폼", "위성데이터 플랫폼",
+        "위성 서비스", "지표 변화 탐지", "변화 탐지",
     ],
 }
+
 
 
 # 1차 후보 개수 (토픽당 NewsAPI에서 넉넉히 가져오기)
@@ -291,7 +338,7 @@ MIN_TOTAL_PER_TOPIC = ARTICLES_PER_TOPIC_FINAL + 6  # 3 + 6 = 9
 
 # # **03 NewsAPI로 기사 수집**
 
-# In[5]:
+# In[21]:
 
 
 # ============================
@@ -527,6 +574,37 @@ def search_news_google_rss_kr(query, from_date, to_date, language=None, page_siz
 
     return articles
 
+
+def _normalize_naver_query(q: str) -> str:
+    """
+    Naver Search API용 query 정리.
+    - Naver는 Google처럼 boolean OR/AND/NOT을 안정적으로 지원하지 않을 수 있어 제거(공백 치환)
+    - 괄호/따옴표/중복 공백 정리
+    - 너무 긴 쿼리는 재현율/품질에 불리할 수 있어 보수적으로 길이 제한
+    """
+    q = (q or "").strip()
+    if not q:
+        return ""
+
+    # boolean 토큰 제거(대/소문자 모두)
+    q = re.sub(r"\b(OR|AND|NOT)\b", " ", q, flags=re.IGNORECASE)
+
+    # 괄호 제거
+    q = q.replace("(", " ").replace(")", " ")
+
+    # 따옴표 제거(길이만 늘고 효과가 적은 경우가 많음)
+    q = q.replace('"', " ")
+
+    # 공백 정리
+    q = re.sub(r"\s+", " ", q).strip()
+
+    # 길이 제한
+    if len(q) > 120:
+        q = q[:120].rsplit(" ", 1)[0].strip() or q[:120].strip()
+
+    return q
+
+
 def search_news_naver(query, from_date, to_date, language=None, page_size=30):
     """
     Naver Search API - News (KR fallback)
@@ -537,6 +615,11 @@ def search_news_naver(query, from_date, to_date, language=None, page_size=30):
     if not NAVER_CLIENT_ID or not NAVER_CLIENT_SECRET:
         # 키 없으면 조용히 스킵 (로그만)
         print("[WARN] Naver API keys missing: NAVER_CLIENT_ID / NAVER_CLIENT_SECRET")
+        return []
+
+    # Naver는 boolean OR이 안정적으로 동작하지 않을 수 있어 query를 정규화
+    query = _normalize_naver_query(query)
+    if not query:
         return []
 
     url = "https://openapi.naver.com/v1/search/news.json"
@@ -1042,6 +1125,67 @@ def _build_ko_query_for_local_sources(topic_keywords, fallback_query):
         fb = fb.split(" OR ")[0].strip()
     return fb
 
+def _split_keywords_by_lang(topic_keywords):
+    """
+    토픽 키워드를 en/ko로 분리 (Hangul 포함 여부 기준).
+
+    중요:
+    - 키워드가 '"A" OR "B" OR "한글"' 처럼 한 줄에 섞여 있는 경우가 많아서,
+      문자열 내부 OR를 먼저 분해한 뒤 조각 단위로 언어 분리한다.
+    - 이렇게 해야 en_sources(GNews 등)로 한글이 섞여 들어가 400이 나는 것을 막을 수 있다.
+    """
+    def _has_hangul(s: str) -> bool:
+        return any('\uac00' <= ch <= '\ud7a3' for ch in (s or ""))
+
+    def _split_or_expr(s: str):
+        """
+        매우 단순한 OR 분해:
+        - 공백 포함 OR 토큰 기준으로 쪼갠다.
+        - 괄호/공백 정리만 수행 (완전한 파서가 아니라 '최소 변경' 목적)
+        """
+        s = (s or "").strip()
+        if not s:
+            return []
+        parts = re.split(r"\s+OR\s+", s, flags=re.IGNORECASE)
+        out = []
+        for p in parts:
+            p = (p or "").strip()
+            p = p.strip("()").strip()
+            if p:
+                out.append(p)
+        return out if out else [s]
+
+    en_terms, ko_terms = [], []
+
+    for k in (topic_keywords or []):
+        s = str(k or "").strip()
+        if not s:
+            continue
+
+        # ✅ "A OR B OR 한글" 같은 혼합 문자열은 먼저 OR로 분해해서 조각 단위로 분류
+        pieces = _split_or_expr(s)
+        for piece in pieces:
+            if not piece:
+                continue
+            if _has_hangul(piece):
+                ko_terms.append(piece)
+            else:
+                en_terms.append(piece)
+
+    # 순서 유지 dedup
+    def _uniq(seq):
+        out, seen = [], set()
+        for x in seq:
+            key = x.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append(x)
+        return out
+
+    return _uniq(en_terms), _uniq(ko_terms)
+
+
 
 def collect_articles_for_topic(topic_id, keywords):
     collected_ko = []
@@ -1075,24 +1219,33 @@ def collect_articles_for_topic(topic_id, keywords):
         topic_id=topic_id,
     )
 
+    # ✅ 키워드를 en/ko로 분리해서 언어별 소스에 섞이지 않게 함
+    keywords_en, keywords_ko = _split_keywords_by_lang(keywords)
+
+    # en이 비면(극단 케이스) 기존 keywords를 fallback
+    if not keywords_en:
+        keywords_en = list(keywords or [])
+
 
     PASS1_KW_N = 2
 
     # -------------------------------------------------
-    # ✅ 언어별 소스 완전 분리 (중요)
-    #   - en: 기존 6개 뉴스 API만 사용
-    #   - ko: Google KR RSS + Naver + (선택) NewsAPI top-headlines 캐시만 사용
+    # ✅ 언어별 소스 완전 분리 + 언어별 키워드 완전 분리
+    #   - en: 기존 6개 뉴스 API만 사용 + en 키워드만 사용
+    #   - ko: Google KR RSS + Naver + topheadlines_cache만 사용 + ko 키워드만 사용
     # -------------------------------------------------
     pass_plan = [
         {
             "name": "pass1",
-            "kws": keywords[:PASS1_KW_N],
+            "kws_en": keywords_en[:PASS1_KW_N],
+            "kws_ko": keywords_ko,
             "en_sources": ("gnews", "newsapi_everything"),
             "ko_sources": ("google_rss_kr", "naver_news", "topheadlines_cache"),
         },
         {
             "name": "pass2",
-            "kws": keywords,  # pass2는 전체
+            "kws_en": keywords_en,
+            "kws_ko": keywords_ko,
             "en_sources": (
                 "gnews",
                 "newsapi_everything",
@@ -1104,6 +1257,28 @@ def collect_articles_for_topic(topic_id, keywords):
             "ko_sources": ("google_rss_kr", "naver_news", "topheadlines_cache"),
         },
     ]
+
+    # en이 비면(극단 케이스) "mixed keywords 전체"를 en으로 되돌려 넣지 말고,
+    # 한글을 제거한 문자열만 en 후보로 만든다 (GNews 400 방지)
+    if not keywords_en:
+        tmp_en = []
+        for k in (keywords or []):
+            s = str(k or "").strip()
+            if not s:
+                continue
+            # 한글만 제거 → 남은 영문/기호 기반으로 en 쿼리 후보 생성
+            s2 = re.sub(r"[\uac00-\ud7a3]+", " ", s)
+            s2 = re.sub(r"\s+", " ", s2).strip()
+            if s2:
+                tmp_en.append(s2)
+        keywords_en = tmp_en
+
+    # ko가 비면(극단 케이스) RSS/Naver는 영문도 어느 정도 검색되므로 기존 fallback 유지
+    if not keywords_ko:
+        keywords_ko = list(keywords or [])
+
+
+
 
 
     for plan in pass_plan:
@@ -1125,7 +1300,7 @@ def collect_articles_for_topic(topic_id, keywords):
             # 1) ✅ GNews OR 묶음: 언어당 1~2회 호출
             # -------------------------------------------------
             if "gnews" in active_sources and len(tier_articles) < remaining:
-                gnews_chunks = chunk_keywords_for_1to2_calls(plan["kws"], max_terms_per_call=18)
+                gnews_chunks = chunk_keywords_for_1to2_calls(plan["kws_en"], max_terms_per_call=18)
                 for chunk in gnews_chunks:
                     if len(tier_articles) >= remaining:
                         break
@@ -1151,7 +1326,7 @@ def collect_articles_for_topic(topic_id, keywords):
             # 2) ✅ NewsAPI everything OR 묶음: 언어당 1~2회 호출
             # -------------------------------------------------
             if "newsapi_everything" in active_sources and len(tier_articles) < remaining:
-                newsapi_chunks = chunk_keywords_for_1to2_calls(plan["kws"], max_terms_per_call=18)
+                newsapi_chunks = chunk_keywords_for_1to2_calls(plan["kws_en"], max_terms_per_call=18)
 
                 for chunk in newsapi_chunks:
                     if len(tier_articles) >= remaining:
@@ -1184,11 +1359,17 @@ def collect_articles_for_topic(topic_id, keywords):
                 # (a) Google News RSS (KR)
                 rem_kr = remaining - len(tier_articles)
                 if "google_rss_kr" in active_sources and rem_kr > 0:
+                    ko_query = _build_ko_query_for_local_sources(
+                        plan.get("kws_ko") or [],
+                        fallback_query=((plan.get("kws_ko")[0] if plan.get("kws_ko") else "") or (plan.get("kws_en")[0] if plan.get("kws_en") else "")),
+
+                    )
+
                     tier_articles.extend(
                         call_api_guarded(
                             "google_rss_kr",
                             search_news_google_rss_kr,
-                            plan["kws"][0] if plan["kws"] else "",
+                            ko_query,
                             DATE_FROM,
                             DATE_TO,
                             language=lang,
@@ -1197,14 +1378,21 @@ def collect_articles_for_topic(topic_id, keywords):
                         )
                     )
 
+
                 # (b) Naver News Search API
                 rem_kr2 = remaining - len(tier_articles)
                 if "naver_news" in active_sources and rem_kr2 > 0:
+                    ko_query = _build_ko_query_for_local_sources(
+                        plan.get("kws_ko") or [],
+                        fallback_query=((plan.get("kws_ko")[0] if plan.get("kws_ko") else "") or (plan.get("kws_en")[0] if plan.get("kws_en") else "")),
+
+                    )
+
                     tier_articles.extend(
                         call_api_guarded(
                             "naver_news",
                             search_news_naver,
-                            plan["kws"][0] if plan["kws"] else "",
+                            ko_query,
                             DATE_FROM,
                             DATE_TO,
                             language=lang,
@@ -1212,7 +1400,6 @@ def collect_articles_for_topic(topic_id, keywords):
                             topic_id=topic_id,
                         )
                     )
-
 
             # -------------------------------------------------
             # 3) 보조 소스들(pass2에서만) — budget으로 상한이 강하게 걸림
@@ -1225,7 +1412,7 @@ def collect_articles_for_topic(topic_id, keywords):
                         call_api_guarded(
                             "mediastack",
                             search_news_mediastack,
-                            plan["kws"][0] if plan["kws"] else "",
+                            plan.get("kws_en")[0] if plan.get("kws_en") else "",
                             DATE_FROM,
                             DATE_TO,
                             language=lang,
@@ -1241,7 +1428,7 @@ def collect_articles_for_topic(topic_id, keywords):
                         call_api_guarded(
                             "serpapi",
                             search_news_serpapi,
-                            plan["kws"][0] if plan["kws"] else "",
+                            plan.get("kws_en")[0] if plan.get("kws_en") else "",
                             DATE_FROM,
                             DATE_TO,
                             language=lang,
@@ -1257,7 +1444,7 @@ def collect_articles_for_topic(topic_id, keywords):
                         call_api_guarded(
                             "currents",
                             search_news_currents,
-                            plan["kws"][0] if plan["kws"] else "",
+                            plan.get("kws_en")[0] if plan.get("kws_en") else "",
                             DATE_FROM,
                             DATE_TO,
                             language=lang,
@@ -1273,7 +1460,7 @@ def collect_articles_for_topic(topic_id, keywords):
                         call_api_guarded(
                             "newsdata",
                             search_news_newsdata,
-                            plan["kws"][0] if plan["kws"] else "",
+                            plan.get("kws_en")[0] if plan.get("kws_en") else "",
                             DATE_FROM,
                             DATE_TO,
                             language=lang,
@@ -1281,43 +1468,6 @@ def collect_articles_for_topic(topic_id, keywords):
                             topic_id=topic_id,
                         )
                     )
-
-                # -------------------------------------------------
-                # 6) ✅ (추가) 한국 전용 백업: Google News RSS (KR) + Naver Search API
-                #    - ko 수량 부족 시에만 호출
-                # -------------------------------------------------
-                if lang == "ko" and len(tier_articles) < remaining:
-                    # (a) Google News RSS (KR)
-                    rem_kr = remaining - len(tier_articles)
-                    if "google_rss_kr" in active_sources and rem_kr > 0:
-                        tier_articles.extend(
-                            call_api_guarded(
-                                "google_rss_kr",
-                                search_news_google_rss_kr,
-                                plan["kws"][0] if plan["kws"] else "",
-                                DATE_FROM,
-                                DATE_TO,
-                                language=lang,
-                                page_size=min(rem_kr, 30),
-                                topic_id=topic_id,
-                            )
-                        )
-
-                    # (b) Naver News Search API
-                    rem_kr2 = remaining - len(tier_articles)
-                    if "naver_news" in active_sources and rem_kr2 > 0:
-                        tier_articles.extend(
-                            call_api_guarded(
-                                "naver_news",
-                                search_news_naver,
-                                plan["kws"][0] if plan["kws"] else "",
-                                DATE_FROM,
-                                DATE_TO,
-                                language=lang,
-                                page_size=min(rem_kr2, 30),
-                                topic_id=topic_id,
-                            )
-                        )
 
             # -------------------------------------------------
             # 4) ✅ top-headlines 캐시 보강: pass2에서만
@@ -1391,7 +1541,7 @@ def collect_articles_for_topic(topic_id, keywords):
 
 
 
-
+reset_run_state()
 print("=== [1단계] NewsAPI에서 기사 수집 중 ===")
 
 raw_articles = []
@@ -1410,7 +1560,7 @@ if IN_COLAB:
 
 # # **03-1 언어별 비율 계산 함수**
 
-# In[6]:
+# In[22]:
 
 
 # ============================
@@ -1467,7 +1617,7 @@ def is_korean_article(article_dict):
 
 # # **04 GPT (엄격 필터링/분류/요약)**
 
-# In[7]:
+# In[23]:
 
 
 # ============================
@@ -1777,7 +1927,7 @@ if IN_COLAB:
 
 # # **05 부족한 토픽은 백업 프롬프트로 채우기 + 토픽당 3개 맞추기**
 
-# In[8]:
+# In[24]:
 
 
 # ============================
@@ -1900,7 +2050,7 @@ print("CSV 저장 완료: newsletter_articles.csv")
 
 # # **06 메인(3개) + 더보기 기사 분리**
 
-# In[9]:
+# In[25]:
 
 
 # ============================
@@ -2311,7 +2461,7 @@ print("\n" + "="*60 + "\n")
 
 # # **07 최신 연구동향 (학술지 섹션) 설정**
 
-# In[10]:
+# In[26]:
 
 
 # ============================================
@@ -2748,7 +2898,7 @@ def collect_research_articles_from_crossref(
 
 # # **07-1 썸네일 추출 (기본 썸네일 포함)**
 
-# In[11]:
+# In[27]:
 
 
 # ============================
@@ -3166,7 +3316,7 @@ print("(본문 영역 위주 + sidebar/related 제외 + 스마트 필터 + canon
 
 # # **07-2 최신 연구동향 추가**
 
-# In[12]:
+# In[28]:
 
 
 # ============================================
@@ -3565,7 +3715,7 @@ else:
 # 
 # # **08 카드/섹션 HTML + 최종 뉴스레터 HTML 생성**
 
-# In[13]:
+# In[29]:
 
 
 # ============================
@@ -6285,7 +6435,7 @@ for topic_num, url in TOPIC_MORE_URLS.items():
 # # **09 이메일 자동 발송**
 # ### **(Colab에서 실행하면 테스트 이메일로, Github 실행 시, 실제 수신자에게)**
 
-# In[14]:
+# In[30]:
 
 
 SEND_EMAIL = os.environ.get("SEND_EMAIL", "true").lower() == "true"
@@ -6338,7 +6488,7 @@ else:
 
 # # **10. 최종 통계 출력**
 
-# In[15]:
+# In[31]:
 
 
 # ============================
