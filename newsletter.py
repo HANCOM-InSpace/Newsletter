@@ -4077,7 +4077,7 @@ print("="*60 + "\n")
 
 # # **08-2 카드/섹션 HTML + 최종 뉴스레터 HTML 생성**
 
-# In[52]:
+# In[62]:
 
 
 # ============================
@@ -4085,6 +4085,7 @@ print("="*60 + "\n")
 # ============================
 W_HEADER_BACKGROUND = "https://hancom-inspace.github.io/Weekly-Newsletter/assets/hheader.jpg"
 HLOGO_URL = "https://hancom-inspace.github.io/Weekly-Newsletter/assets/hlogo.png"
+
 if "weekly_focus_insight" not in globals() or not (weekly_focus_insight or "").strip():
     print("[INFO] weekly_focus_insight가 없어서 1회 생성합니다.")
     weekly_focus_insight = generate_weekly_focus_insight(
@@ -6405,7 +6406,7 @@ newsletter_html = f"""
     <td align="center" class="hero-header-cell"
         bgcolor="#ffffff"
         style="padding:16px 24px 14px 24px;
-              background: rgba(255,255,255,0.2);
+              background: rgba(255,255,255,0.1);
               color:#000000;">
 
 
@@ -6774,7 +6775,7 @@ for topic_num, url in TOPIC_MORE_URLS.items():
 # # **09 이메일 자동 발송**
 # ### **(Colab에서 실행하면 테스트 이메일로, Github 실행 시, 실제 수신자에게)**
 
-# In[53]:
+# In[63]:
 
 
 SEND_EMAIL = os.environ.get("SEND_EMAIL", "true").lower() == "true"
@@ -6827,7 +6828,7 @@ else:
 
 # # **10. 최종 통계 출력**
 
-# In[55]:
+# In[ ]:
 
 
 # ============================
