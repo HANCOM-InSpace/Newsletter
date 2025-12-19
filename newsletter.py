@@ -4077,14 +4077,26 @@ print("="*60 + "\n")
 
 # # **08-2 카드/섹션 HTML + 최종 뉴스레터 HTML 생성**
 
-# In[62]:
+# In[111]:
 
 
 # ============================
 # 08-2. 카드/섹션 HTML + 더보기 페이지 + 최종 뉴스레터 HTML
 # ============================
-W_HEADER_BACKGROUND = "https://hancom-inspace.github.io/Weekly-Newsletter/assets/hheader.jpg"
+W_HEADER_BACKGROUND = "https://hancom-inspace.github.io/Weekly-Newsletter/assets/hheader2.png"
 HLOGO_URL = "https://hancom-inspace.github.io/Weekly-Newsletter/assets/hlogo.png"
+
+# (NEW) 토픽별 더보기 페이지 헤더 이미지
+TOPIC_MORE_HEADER_BACKGROUNDS = {
+    1: "https://hancom-inspace.github.io/Weekly-Newsletter/assets/header_geoint.png",
+    2: "https://hancom-inspace.github.io/Weekly-Newsletter/assets/header_aviation.png",
+    3: "https://hancom-inspace.github.io/Weekly-Newsletter/assets/header_ai_platform.png",
+    4: "https://hancom-inspace.github.io/Weekly-Newsletter/assets/headerbackground.jpg",
+}
+
+# (NEW) 연구동향 더보기 페이지 헤더 이미지
+RESEARCH_MORE_HEADER_BACKGROUND = "https://hancom-inspace.github.io/Weekly-Newsletter/assets/header_research.png"
+
 
 if "weekly_focus_insight" not in globals() or not (weekly_focus_insight or "").strip():
     print("[INFO] weekly_focus_insight가 없어서 1회 생성합니다.")
@@ -4457,12 +4469,15 @@ def build_research_section_html(main_articles, extra_articles, more_url):
 """
 
 
-def build_more_page_html(topic_extra_articles, date_range, newsletter_date, header_title):
+def build_more_page_html(topic_extra_articles, date_range, newsletter_date, header_title, header_bg_url=None):
     """
     토픽별 '추가 기사' 페이지 HTML 생성
     - topic_extra_articles: {토픽번호: [기사 리스트]} 형태 (보통 1개 토픽만 들어오게 사용)
     - header_title: 상단 헤더에 들어갈 타이틀 (예: "GeoINT - 추가 기사")
     """
+    # ✅ (핵심) 이 페이지에서 쓸 헤더 배경을 확정
+    header_bg = header_bg_url or W_HEADER_BACKGROUND
+
     sections = []
 
     for topic_num in [1, 2, 3, 4]:
@@ -4638,6 +4653,7 @@ def build_more_page_html(topic_extra_articles, date_range, newsletter_date, head
     else:
         body_inner = "".join(sections)
 
+    header_bg = header_bg_url or HEADER_BACKGROUND
     more_html = f"""
 <!DOCTYPE html>
 <html lang="ko">
@@ -4685,22 +4701,22 @@ def build_more_page_html(topic_extra_articles, date_range, newsletter_date, head
 
   <!-- 헤더 (메일과 유사한 스타일) -->
   <table class="hero-bg" width="100%" cellpadding="0" cellspacing="0" border="0"
-       style="background-image:url('{W_HEADER_BACKGROUND}');
+       style="background-image:url('{header_bg}');
               background-size:cover;
-              background-position:center -60px;
+              background-position:center 50%;
               background-repeat:no-repeat;">
     <tr>
       <td align="center" class="hero-header-cell"
           bgcolor="#000000"
           style="padding:0 24px 14px 24px;
                  background: linear-gradient(to bottom right,
-                             rgba(0,0,40,0.55),
-                             rgba(0,0,0,0.55));
+                             rgba(255,255,255,0.55),
+                             rgba(255,255,255,0.55));
                  color:#ffffff; ;">
 
         <table cellpadding="0" cellspacing="0" border="0"
                style="max-width:{CONTENT_WIDTH}px; width:100%;
-                      color:#ffffff; margin:0 auto;">
+                      color:#000000; margin:0 auto;">
 
           <tr>
             <td style="padding:16px 24px 8px 24px;">
@@ -4710,8 +4726,8 @@ def build_more_page_html(topic_extra_articles, date_range, newsletter_date, head
                     <img src="{HLOGO_URL}" style="max-width:110px; display:block;">
                   </td>
                   <td align="right"
-                      style="text-transform:uppercase; font-size:13px;
-                             color:#ffffff; ;">
+                      style="text-transform:uppercase; font-size:13px; font-weight:500;
+                             color:#000000; ;">
                     WWW.INSPACE.CO.KR
                   </td>
                 </tr>
@@ -4722,8 +4738,8 @@ def build_more_page_html(topic_extra_articles, date_range, newsletter_date, head
           <tr>
             <td align="center"
                 style="padding:0px 24px 12px 24px;
-                       font-size:28px; font-weight:600;
-                       color:#ffffff; ;">
+                       font-size:28px; font-weight:700;
+                       color:#000000; ;">
               {h(header_title)}
             </td>
           </tr>
@@ -4731,8 +4747,8 @@ def build_more_page_html(topic_extra_articles, date_range, newsletter_date, head
           <tr>
             <td align="center"
                 style="padding:0 24px 48px 24px;
-                       font-size:14px; font-weight:300; opacity:0.9; line-height:1.5;
-                       color:#ffffff; ;">
+                       font-size:14px; font-weight:500; opacity:0.9; line-height:1.5;
+                       color:#000000; ;">
               {date_range}<br>
               {WEEK_LABEL} 뉴스레터
             </td>
@@ -4880,7 +4896,8 @@ def build_more_page_html(topic_extra_articles, date_range, newsletter_date, head
     return more_html
 
 
-def build_research_more_page_html(extra_articles, date_range, newsletter_date):
+def build_research_more_page_html(extra_articles, date_range, newsletter_date, header_bg_url=None):
+
     """
     💡 최신 연구동향 - 추가 학술지 페이지 HTML
     - 레이아웃: build_more_page_html(GeoINT 등)과 동일
@@ -5075,7 +5092,7 @@ def build_research_more_page_html(extra_articles, date_range, newsletter_date):
 
     # 상단 히어로 헤더에 들어갈 타이틀 (탭 제목도 같이 사용)
     header_title = "최신 연구동향 - 추가 학술지"
-
+    header_bg = header_bg_url or HEADER_BACKGROUND
     more_html = f"""
 <!DOCTYPE html>
 <html lang="ko">
@@ -5123,22 +5140,22 @@ def build_research_more_page_html(extra_articles, date_range, newsletter_date):
 
   <!-- 헤더 (more_geoint와 동일 구조) -->
   <table class="hero-bg" width="100%" cellpadding="0" cellspacing="0" border="0"
-       style="background-image:url('{W_HEADER_BACKGROUND}');
+       style="background-image:url('{header_bg}');
               background-size:cover;
-              background-position:center -60px;
+              background-position:center 50%;
               background-repeat:no-repeat;">
     <tr>
       <td align="center" class="hero-header-cell"
           bgcolor="#000000"
           style="padding:0 24px 14px 24px;
                  background: linear-gradient(to bottom right,
-                             rgba(0,0,40,0.55),
-                             rgba(0,0,0,0.55));
+                             rgba(255,255,255,0.55),
+                             rgba(255,255,255,0.55));
                  color:#ffffff; ;">
 
         <table cellpadding="0" cellspacing="0" border="0"
                style="max-width:{CONTENT_WIDTH}px; width:100%;
-                      color:#ffffff; margin:0 auto;">
+                      color:#000000; margin:0 auto;">
 
           <tr>
             <td style="padding:16px 24px 8px 24px;">
@@ -5148,8 +5165,8 @@ def build_research_more_page_html(extra_articles, date_range, newsletter_date):
                     <img src="{HLOGO_URL}" style="max-width:110px; display:block;">
                   </td>
                   <td align="right"
-                      style="text-transform:uppercase; font-size:13px;
-                             color:#ffffff; ;">
+                      style="text-transform:uppercase; font-size:13px; font-weight:500;
+                             color:#000000; ;">
                     WWW.INSPACE.CO.KR
                   </td>
                 </tr>
@@ -5160,8 +5177,8 @@ def build_research_more_page_html(extra_articles, date_range, newsletter_date):
           <tr>
             <td align="center"
                 style="padding:0px 24px 12px 24px;
-                       font-size:28px; font-weight:600;
-                       color:#ffffff; ;">
+                       font-size:28px; font-weight:800;
+                       color:#000000; ;">
               {h(header_title)}
             </td>
           </tr>
@@ -5169,8 +5186,8 @@ def build_research_more_page_html(extra_articles, date_range, newsletter_date):
           <tr>
             <td align="center"
                 style="padding:0 24px 48px 24px;
-                       font-size:14px; font-weight:300; opacity:0.9; line-height:1.5;
-                       color:#ffffff; ;">
+                       font-size:14px; font-weight:500; opacity:0.9; line-height:1.5;
+                       color:#000000; ;">
               {date_range}<br>
               {WEEK_LABEL} 뉴스레터
             </td>
@@ -6179,12 +6196,18 @@ for topic_num in [1, 2, 3, 4]:
         continue
 
     header_title = TOPIC_MORE_TITLES.get(topic_num, f"Topic {topic_num} - 추가 기사")
+
+    # ✅ (핵심) 토픽별 헤더 배경 이미지 URL 전달
+    header_bg = TOPIC_MORE_HEADER_BACKGROUNDS.get(topic_num, W_HEADER_BACKGROUND)
+
     more_pages_html[topic_num] = build_more_page_html(
         {topic_num: extras},
         date_range,
         NEWSLETTER_DATE,
         header_title,
+        header_bg_url=header_bg,   # ✅ 추가
     )
+
 
 # 💡 최신 연구동향 - 추가 학술지 페이지 HTML 생성
 # - 이 페이지에는 '정한 기간 내 모든 학술지'를 보여주기 위해 research_more_articles 사용
@@ -6192,7 +6215,9 @@ research_more_html = build_research_more_page_html(
     research_more_articles,
     date_range,
     NEWSLETTER_DATE,
+    header_bg_url=RESEARCH_MORE_HEADER_BACKGROUND,
 )
+
 
 
 
@@ -6400,14 +6425,15 @@ newsletter_html = f"""
 <table class="hero-bg" width="100%" cellpadding="0" cellspacing="0" border="0"
        style="background-image:url('{W_HEADER_BACKGROUND}');
               background-size:cover;
-              background-position:center;
+              background-position:center 50%;
               background-repeat:no-repeat;">
   <tr>
-    <td align="center" class="hero-header-cell"
-        bgcolor="#ffffff"
+    <td align="center"
+        class="hero-header-cell"
         style="padding:16px 24px 14px 24px;
-              background: rgba(255,255,255,0.1);
-              color:#000000;">
+               background: transparent;
+               background: rgba(255,255,255,0.2);
+               color:#000000;">
 
 
       <table cellpadding="0" cellspacing="0" border="0"
@@ -6775,7 +6801,7 @@ for topic_num, url in TOPIC_MORE_URLS.items():
 # # **09 이메일 자동 발송**
 # ### **(Colab에서 실행하면 테스트 이메일로, Github 실행 시, 실제 수신자에게)**
 
-# In[63]:
+# In[112]:
 
 
 SEND_EMAIL = os.environ.get("SEND_EMAIL", "true").lower() == "true"
@@ -6828,7 +6854,7 @@ else:
 
 # # **10. 최종 통계 출력**
 
-# In[ ]:
+# In[113]:
 
 
 # ============================
