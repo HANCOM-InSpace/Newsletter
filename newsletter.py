@@ -4077,7 +4077,7 @@ print("="*60 + "\n")
 
 # # **08-2 카드/섹션 HTML + 최종 뉴스레터 HTML 생성**
 
-# In[65]:
+# In[69]:
 
 
 # ============================
@@ -4091,7 +4091,7 @@ TOPIC_MORE_HEADER_BACKGROUNDS = {
     1: "https://hancom-inspace.github.io/Weekly-Newsletter/assets/header_geoint1.png",
     2: "https://hancom-inspace.github.io/Weekly-Newsletter/assets/header_aviation.png",
     3: "https://hancom-inspace.github.io/Weekly-Newsletter/assets/header_ai_platform1.png",
-    4: "https://hancom-inspace.github.io/Weekly-Newsletter/assets/headerbackground.jpg",
+    4: "https://hancom-inspace.github.io/Weekly-Newsletter/assets/header_satellite.jpg",
 }
 
 # (NEW) 연구동향 더보기 페이지 헤더 이미지
@@ -6879,7 +6879,7 @@ for topic_num, url in TOPIC_MORE_URLS.items():
 # # **09 이메일 자동 발송**
 # ### **(Colab에서 실행하면 테스트 이메일로, Github 실행 시, 실제 수신자에게)**
 
-# In[66]:
+# In[70]:
 
 
 SEND_EMAIL = os.environ.get("SEND_EMAIL", "true").lower() == "true"
@@ -6946,7 +6946,7 @@ else:
 
 # # **10. 최종 통계 출력**
 
-# In[67]:
+# In[71]:
 
 
 # ============================
