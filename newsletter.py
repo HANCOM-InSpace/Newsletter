@@ -4077,7 +4077,7 @@ print("="*60 + "\n")
 
 # # **08-2 카드/섹션 HTML + 최종 뉴스레터 HTML 생성**
 
-# In[29]:
+# In[14]:
 
 
 # ============================
@@ -5680,13 +5680,21 @@ def build_archive_page_html(archive_items):
         var scrollTop = window.pageYOffset || doc.scrollTop || 0;
         var maxScroll = (doc.scrollHeight - window.innerHeight);
 
-        // 0~1 스크롤 진행률
-        var p = (maxScroll > 0) ? (scrollTop / maxScroll) : 0;
+        /*
+          ✅ 아카이브는 스크롤이 짧아서 p가 급격히 튐 → 시킹이 자주 발생 → 끊김
+          ✅ "가상 스크롤 길이"를 하한으로 둬서, 스크롤이 짧아도 영상이 천천히 진행되게 함
+          - 숫자가 클수록 더 천천히 진행됨
+        */
+        var VIRTUAL_SCROLL_PX = 2600; // 추천: 1800~4000 범위에서 조절
+        var denom = Math.max(1, Math.max(maxScroll, VIRTUAL_SCROLL_PX));
+
+        var p = scrollTop / denom;
         if (p < 0) p = 0;
         if (p > 1) p = 1;
 
-        // 스크롤 최상단 = 영상 처음 / 최하단 = 영상 끝
         var desired = p * duration;
+
+
 
         // 끝 프레임 안정화 (선택)
         var END_MARGIN = 0.03;
@@ -5719,8 +5727,12 @@ def build_archive_page_html(archive_items):
       }}
 
       function applyTime(t) {{
-        // 너무 잦은 seek 방지(디코더 부담↓)
-        var EPS = 0.02;
+        // ✅ 30fps 기준으로 프레임 단위 양자화 → 불필요한 미세 시킹 감소
+        var FRAME_STEP = 1 / 30;          // 30fps 기준 (원하면 1/24, 1/25도 가능)
+        t = Math.round(t / FRAME_STEP) * FRAME_STEP;
+
+        // ✅ 너무 잦은 seek 방지(디코더 부담↓)
+        var EPS = FRAME_STEP;             // 기존 0.02보다 조금 더 보수적으로
         if (Math.abs((video.currentTime || 0) - t) < EPS) return;
 
         try {{
@@ -5731,6 +5743,7 @@ def build_archive_page_html(archive_items):
           }}
         }} catch (e) {{}}
       }}
+
 
       function animate() {{
         if (!animating) return;
@@ -5767,14 +5780,22 @@ def build_archive_page_html(archive_items):
         try {{ video.load(); }} catch (e) {{}}
       }}
 
-      window.addEventListener(
-        'scroll',
-        function() {{
-          calcTargetTimeFromScroll();
-          startAnimLoop();
-        }},
-        {{ passive: true }}
-      );
+    // ✅ scroll 이벤트 폭주 방지: rAF에서 1프레임에 1번만 targetTime 계산
+    var pendingScroll = false;
+
+    function onScrollRAF() {{
+      if (!pendingScroll) return;
+      pendingScroll = false;
+
+      calcTargetTimeFromScroll();
+      startAnimLoop();
+    }}
+
+    window.addEventListener('scroll', function () {{
+      pendingScroll = true;
+      window.requestAnimationFrame(onScrollRAF);
+    }}, {{ passive: true }});
+
 
       window.addEventListener('resize', function() {{
         calcTargetTimeFromScroll();
@@ -6841,7 +6862,7 @@ for topic_num, url in TOPIC_MORE_URLS.items():
 # # **09 이메일 자동 발송**
 # ### **(Colab에서 실행하면 테스트 이메일로, Github 실행 시, 실제 수신자에게)**
 
-# In[30]:
+# In[15]:
 
 
 SEND_EMAIL = os.environ.get("SEND_EMAIL", "true").lower() == "true"
@@ -6894,7 +6915,7 @@ else:
 
 # # **10. 최종 통계 출력**
 
-# In[ ]:
+# In[16]:
 
 
 # ============================
