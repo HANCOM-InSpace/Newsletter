@@ -4077,7 +4077,7 @@ print("="*60 + "\n")
 
 # # **08-2 카드/섹션 HTML + 최종 뉴스레터 HTML 생성**
 
-# In[30]:
+# In[36]:
 
 
 # ============================
@@ -4672,8 +4672,9 @@ def build_more_page_html(topic_extra_articles, date_range, newsletter_date, head
     .hero-bg {{
       background-position:center 0 !important;
     }}
+    /* ✅ 모바일에서 헤더 상하 여백 축소 (추가 기사 페이지 전용) */
     .hero-header-cell {{
-      padding:32px 0 28px 0 !important;
+      padding: 14px 0 8px 0 !important;
     }}
   }}
 
@@ -4691,11 +4692,12 @@ def build_more_page_html(topic_extra_articles, date_range, newsletter_date, head
     font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","맑은 고딕",system-ui,sans-serif;
   }}
 
-
   .content-wrapper {{
     flex: 1;
   }}
 </style>
+
+
 
 </head>
 
@@ -5115,8 +5117,9 @@ def build_research_more_page_html(extra_articles, date_range, newsletter_date, h
     .hero-bg {{
       background-position:center 0 !important;
     }}
+    /* ✅ 모바일에서 헤더 상하 여백 축소 (추가 기사 페이지 전용) */
     .hero-header-cell {{
-      padding:32px 0 28px 0 !important;
+      padding: 14px 0 8px 0 !important;
     }}
   }}
 
@@ -5138,6 +5141,7 @@ def build_research_more_page_html(extra_articles, date_range, newsletter_date, h
     flex: 1;
   }}
 </style>
+
 
 </head>
 
@@ -6875,7 +6879,7 @@ for topic_num, url in TOPIC_MORE_URLS.items():
 # # **09 이메일 자동 발송**
 # ### **(Colab에서 실행하면 테스트 이메일로, Github 실행 시, 실제 수신자에게)**
 
-# In[31]:
+# In[37]:
 
 
 SEND_EMAIL = os.environ.get("SEND_EMAIL", "true").lower() == "true"
@@ -6928,7 +6932,7 @@ else:
 
 # # **10. 최종 통계 출력**
 
-# In[32]:
+# In[38]:
 
 
 # ============================
