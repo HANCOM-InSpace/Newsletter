@@ -269,7 +269,7 @@
 
               
           <div class="archive-card-insight">
-            이번 주에는 위성 영상과 공간정보 융합 흐름이 강화되며, 기후·재난 대응과 군사 정찰 역량의 전략적 전환이 가속되고 있습니다.
+            이번 주에는 지리공간 정보가 전략적 인프라와 거버넌스로 전환되는 흐름이 강화되며, 기후 대응과 군사 정찰 활용이 함께 부상하고 있습니다.
           </div>
         
 
@@ -344,24 +344,21 @@
 
 
 
-        /*
-          ✅ 스크롤이 짧아도 영상이 천천히 진행되도록
-          가상 스크롤 길이를 하한으로 둠
-        */
-
-        var denom = Math.max(1, maxScroll);
+        var VIRTUAL_SCROLL_PX = 2600;
+        var denom = Math.max(1, Math.max(maxScroll, VIRTUAL_SCROLL_PX));
 
         var p = scrollTop / denom;
         if (p < 0) p = 0;
         if (p > 1) p = 1;
 
-        /*
-          ✅ 영상 전체 duration 사용 (제한 제거)
-        */
+        // ✅ 끝까지 도달 보정
+        var scale = (maxScroll > 0) ? (denom / maxScroll) : 1;
+        var desired = p * duration * scale;
 
+        if (desired < 0) desired = 0;
+        if (desired > duration) desired = duration;
 
         targetTime = desired;
-
 
 
 
