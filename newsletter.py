@@ -9,7 +9,7 @@
 
 # # **01-1 설치 & import**
 
-# In[52]:
+# In[ ]:
 
 
 # ============================
@@ -49,7 +49,7 @@ if IN_COLAB:
 
 # # **01-2 라이브러리 설치**
 
-# In[53]:
+# In[ ]:
 
 
 # ============================
@@ -93,7 +93,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # # **02-1 설정 (API 키)**
 
-# In[54]:
+# In[ ]:
 
 
 # ============================================================
@@ -118,7 +118,7 @@ NEWSDATA_BASE_URL_LATEST = "https://newsdata.io/api/1/latest"
 
 # # **02-2 설정 (날짜, 주제, 키워드, 상수)**
 
-# In[55]:
+# In[ ]:
 
 
 # 사용할 GPT mini 모델 이름 (예: "gpt-4.1-mini", 나중에 "gpt-5.1-mini"로 교체 가능)
@@ -338,7 +338,7 @@ MIN_TOTAL_PER_TOPIC = ARTICLES_PER_TOPIC_FINAL + 6  # 3 + 6 = 9
 
 # # **03 NewsAPI로 기사 수집**
 
-# In[56]:
+# In[ ]:
 
 
 # ============================
@@ -1560,7 +1560,7 @@ if IN_COLAB:
 
 # # **03-1 언어별 비율 계산 함수**
 
-# In[57]:
+# In[ ]:
 
 
 # ============================
@@ -1617,7 +1617,7 @@ def is_korean_article(article_dict):
 
 # # **04 GPT (엄격 필터링/분류/요약)**
 
-# In[58]:
+# In[ ]:
 
 
 # ============================
@@ -1927,7 +1927,7 @@ if IN_COLAB:
 
 # # **05 부족한 토픽은 백업 프롬프트로 채우기 + 토픽당 3개 맞추기**
 
-# In[59]:
+# In[ ]:
 
 
 # ============================
@@ -2050,7 +2050,7 @@ print("CSV 저장 완료: newsletter_articles.csv")
 
 # # **06 메인(3개) + 더보기 기사 분리**
 
-# In[60]:
+# In[ ]:
 
 
 # ============================
@@ -2461,7 +2461,7 @@ print("\n" + "="*60 + "\n")
 
 # # **07 최신 연구동향 (학술지 섹션) 설정**
 
-# In[61]:
+# In[ ]:
 
 
 # ============================================
@@ -2898,7 +2898,7 @@ def collect_research_articles_from_crossref(
 
 # # **07-2 최신 연구동향 추가**
 
-# In[62]:
+# In[ ]:
 
 
 # ============================================
@@ -3236,7 +3236,7 @@ else:
 
 # # **07-1 썸네일 추출 (기본 썸네일 포함)**
 
-# In[63]:
+# In[ ]:
 
 
 import re
@@ -3800,7 +3800,7 @@ print("(본문 영역 위주 + sidebar/related 제외 + 스마트 필터 + canon
 
 # # **08-1 인사이트 생성**
 
-# In[64]:
+# In[ ]:
 
 
 # ============================================================
@@ -4077,7 +4077,7 @@ print("="*60 + "\n")
 
 # # **08-2 카드/섹션 HTML + 최종 뉴스레터 HTML 생성**
 
-# In[69]:
+# In[ ]:
 
 
 # ============================
@@ -5368,6 +5368,18 @@ def build_archive_page_html(archive_items):
                 year_attr = year
                 month_attr = str(int(month_part))  # "03" → "3"
 
+        # ✅ edition 필드(weekly/daily) 결정
+        # - item["edition"]이 있으면 우선 사용
+        # - 없으면 url/label로 추론(과거 데이터 호환)
+        edition = (item.get("edition") or "").strip().lower()
+        if edition not in ("weekly", "daily"):
+            url = (item.get("url") or "")
+            label = (item.get("label") or "")
+            if "daily" in url or "데일리" in label or "daily" in label.lower():
+                edition = "daily"
+            else:
+                edition = "weekly"
+
         insight_html = f"""
           <div class="archive-card-insight">
             {h(insight)}
@@ -5375,7 +5387,7 @@ def build_archive_page_html(archive_items):
         """ if insight else ""
 
         rows.append(f"""
-        <tr class="archive-row" data-year="{year_attr}" data-month="{month_attr}">
+        <tr class="archive-row" data-year="{year_attr}" data-month="{month_attr}" data-edition="{edition}">
           <td style="padding-bottom:16px;">
             <a href="{item['url']}" class="archive-card">
               <div class="archive-card-label">
@@ -5414,7 +5426,6 @@ def build_archive_page_html(archive_items):
     color:#e5e7eb;
   }}
 
-
   .bg-video {{
     display: block;
     filter: blur(2px) brightness(0.78) saturate(0.95);
@@ -5435,14 +5446,13 @@ def build_archive_page_html(archive_items):
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: -4;              /* video(-1)보다 뒤로 */
+    z-index: -4;              /* video(-3)보다 뒤로 */
     background-image: url('https://hancom-inspace.github.io/Weekly-Newsletter/assets/archive_bg_fallback1.png');
     background-size: cover;
     background-position: center top;
     background-repeat: no-repeat;
     display: none;   /* 데스크톱 기본값 */
   }}
-
 
   .bg-dim{{
     position: fixed;
@@ -5463,11 +5473,6 @@ def build_archive_page_html(archive_items):
     .bg-video{{ display: none; }}
     .bg-image{{
       display: block;
-
-      /* ✅ 모바일 이미지가 너무 또렷한 문제 해결:
-        - 아주 살짝 blur
-        - 살짝 어둡게 (brightness)
-        - 살짝 채도/대비 줄이기 (선택) */
       filter: blur(2px) brightness(0.78) saturate(0.95);
       transform: scale(1.03); /* blur 가장자리 깨짐 방지 */
     }}
@@ -5491,7 +5496,6 @@ def build_archive_page_html(archive_items):
   .archive-card-date{{
     text-shadow: 0 1px 6px rgba(0,0,0,0.35);
   }}
-
 
   .filter-wrap {{
     margin: 0 16px 12px 16px;
@@ -5524,7 +5528,6 @@ def build_archive_page_html(archive_items):
     transition:background 0.18s ease, border-color 0.18s ease, transform 0.12s ease, box-shadow 0.12s ease;
   }}
 
-
   /* ✅ Weekly Focus Insight(아카이브 카드용) */
   .archive-card-insight{{
     font-size:13px;
@@ -5543,7 +5546,6 @@ def build_archive_page_html(archive_items):
     overflow-wrap: break-word;
   }}
 
-
   .chip-base:hover {{
     background:rgba(30,64,175,0.7);
     border-color:#60a5fa;
@@ -5557,8 +5559,6 @@ def build_archive_page_html(archive_items):
     color:#ffffff;
     box-shadow:0 0 0 1px rgba(15,23,42,0.4);
   }}
-
-
 
   .archive-card {{
       display:block;
@@ -5614,15 +5614,6 @@ def build_archive_page_html(archive_items):
     }}
   }}
 
-
-    .archive-wrap {{
-      background: radial-gradient(
-        circle at top,
-        rgba(148,163,184,0.18) 0,
-        transparent 55%
-      );
-    }}
-  }}
 </style>
 </head>
 
@@ -5645,6 +5636,8 @@ def build_archive_page_html(archive_items):
         <tr>
           <td>
             <div class="filter-wrap">
+              <!-- ✅ 디자인 유지: 기존 chips-row 그대로 사용 -->
+              <div id="edition-chips" class="chips-row"></div>
               <div id="year-chips" class="chips-row"></div>
               <div id="month-chips" class="chips-row"></div>
             </div>
@@ -5668,7 +5661,7 @@ def build_archive_page_html(archive_items):
   document.addEventListener('DOMContentLoaded', function() {{
 
     // =========================================================
-    // 0) 비디오 스크롤 스크럽(스무딩) — 필터 return과 무관하게 항상 동작
+    // 0) 비디오 스크롤 스크럽(스무딩) — 항상 동작
     // =========================================================
     var video = document.getElementById('bgVideo');
 
@@ -5696,9 +5689,6 @@ def build_archive_page_html(archive_items):
         var scrollTop = window.pageYOffset || doc.scrollTop || 0;
         var maxScroll = (doc.scrollHeight - window.innerHeight);
 
-
-
-
         var VIRTUAL_SCROLL_PX = 2600;
         var denom = Math.max(1, Math.max(maxScroll, VIRTUAL_SCROLL_PX));
 
@@ -5715,10 +5705,6 @@ def build_archive_page_html(archive_items):
         if (scale > 2.5) scale = 2.5;
 
         targetTime = desired;
-
-
-
-
 
         // 스크롤 속도 기반 스무딩 조절
         if (!window.__bgScrubState) {{
@@ -5745,11 +5731,10 @@ def build_archive_page_html(archive_items):
 
       function applyTime(t) {{
         // ✅ 30fps 기준으로 프레임 단위 양자화 → 불필요한 미세 시킹 감소
-        var FRAME_STEP = 1 / 30;          // 30fps 기준 (원하면 1/24, 1/25도 가능)
+        var FRAME_STEP = 1 / 30;
         t = Math.round(t / FRAME_STEP) * FRAME_STEP;
 
-        // ✅ 너무 잦은 seek 방지(디코더 부담↓)
-        var EPS = FRAME_STEP;             // 기존 0.02보다 조금 더 보수적으로
+        var EPS = FRAME_STEP;
         if (Math.abs((video.currentTime || 0) - t) < EPS) return;
 
         try {{
@@ -5760,7 +5745,6 @@ def build_archive_page_html(archive_items):
           }}
         }} catch (e) {{}}
       }}
-
 
       function animate() {{
         if (!animating) return;
@@ -5782,37 +5766,32 @@ def build_archive_page_html(archive_items):
         duration = video.duration || 0;
         ready = duration > 0;
 
-        // 메타데이터 준비 후 첫 동기화 + 루프 시작
         calcTargetTimeFromScroll();
         startAnimLoop();
       }}
 
       video.addEventListener('loadedmetadata', onMetaReady);
 
-      // 이미 준비된 경우 대비
       if (video.readyState >= 1) {{
         onMetaReady();
       }} else {{
-        // 일부 환경에서 안전하게 metadata를 당기기
         try {{ video.load(); }} catch (e) {{}}
       }}
 
-    // ✅ scroll 이벤트 폭주 방지: rAF에서 1프레임에 1번만 targetTime 계산
-    var pendingScroll = false;
+      var pendingScroll = false;
 
-    function onScrollRAF() {{
-      if (!pendingScroll) return;
-      pendingScroll = false;
+      function onScrollRAF() {{
+        if (!pendingScroll) return;
+        pendingScroll = false;
 
-      calcTargetTimeFromScroll();
-      startAnimLoop();
-    }}
+        calcTargetTimeFromScroll();
+        startAnimLoop();
+      }}
 
-    window.addEventListener('scroll', function () {{
-      pendingScroll = true;
-      window.requestAnimationFrame(onScrollRAF);
-    }}, {{ passive: true }});
-
+      window.addEventListener('scroll', function () {{
+        pendingScroll = true;
+        window.requestAnimationFrame(onScrollRAF);
+      }}, {{ passive: true }});
 
       window.addEventListener('resize', function() {{
         calcTargetTimeFromScroll();
@@ -5820,17 +5799,18 @@ def build_archive_page_html(archive_items):
     }}
 
     // =========================================================
-    // 1) 연/월 필터(기존 코드) — 없으면 필터만 스킵
+    // 1) 연/월/edition 필터 — 없으면 필터만 스킵
     // =========================================================
     var rows = Array.prototype.slice.call(document.querySelectorAll('.archive-row'));
+    var editionContainer = document.getElementById('edition-chips');
     var yearContainer = document.getElementById('year-chips');
     var monthContainer = document.getElementById('month-chips');
 
-    // ✅ 여기서 return 하지 말고, 필터만 종료
-    if (!rows.length || !yearContainer || !monthContainer) {{
+    if (!rows.length || !editionContainer || !yearContainer || !monthContainer) {{
       return;
     }}
 
+    // edition 상태 추가
     var yearSet = new Set();
     var yearMonthMap = {{}};
 
@@ -5855,12 +5835,38 @@ def build_archive_page_html(archive_items):
     var currentYear = String(today.getFullYear());
 
     var state = {{
+      edition: 'all',
       year: yearSet.has(currentYear) ? currentYear : 'all',
       month: null
     }};
 
     monthContainer.style.display = 'none';
 
+    // -------------------------
+    // edition chips (전체/주간/데일리)
+    // -------------------------
+    function createEditionChip(value, label) {{
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'chip-base edition-chip';
+      btn.setAttribute('data-edition', value);
+      btn.textContent = label;
+
+      btn.addEventListener('click', function() {{
+        state.edition = value;
+        updateView();
+      }});
+
+      return btn;
+    }}
+
+    editionContainer.appendChild(createEditionChip('all', '전체'));
+    editionContainer.appendChild(createEditionChip('weekly', '주간'));
+    editionContainer.appendChild(createEditionChip('daily', '데일리'));
+
+    // -------------------------
+    // year/month chips (기존 로직 유지)
+    // -------------------------
     function createYearChip(value, label) {{
       var btn = document.createElement('button');
       btn.type = 'button';
@@ -5925,12 +5931,14 @@ def build_archive_page_html(archive_items):
 
     function updateView() {{
       rows.forEach(function(row) {{
+        var rowEdition = row.getAttribute('data-edition') || 'weekly';
         var rowYear = row.getAttribute('data-year');
         var rowMonth = parseInt(row.getAttribute('data-month') || '0', 10);
 
+        var editionMatch = (state.edition === 'all') || (rowEdition === state.edition);
         var yearMatch = (state.year === 'all') || (rowYear === state.year);
-        var monthMatch;
 
+        var monthMatch;
         if (state.year === 'all') {{
           monthMatch = true;
         }} else if (!state.month) {{
@@ -5939,17 +5947,20 @@ def build_archive_page_html(archive_items):
           monthMatch = (rowMonth === state.month);
         }}
 
-        row.style.display = (yearMatch && monthMatch) ? '' : 'none';
+        row.style.display = (editionMatch && yearMatch && monthMatch) ? '' : 'none';
       }});
 
-      var yearChips = document.querySelectorAll('.year-chip');
-      yearChips.forEach(function(chip) {{
+      document.querySelectorAll('.edition-chip').forEach(function(chip) {{
+        var v = chip.getAttribute('data-edition');
+        chip.classList.toggle('active', v === state.edition);
+      }});
+
+      document.querySelectorAll('.year-chip').forEach(function(chip) {{
         var y = chip.getAttribute('data-year');
         chip.classList.toggle('active', y === state.year);
       }});
 
-      var monthChips = document.querySelectorAll('.month-chip');
-      monthChips.forEach(function(chip) {{
+      document.querySelectorAll('.month-chip').forEach(function(chip) {{
         var m = parseInt(chip.getAttribute('data-month') || '0', 10);
         var isActive = (state.year !== 'all') && (state.month === m);
         chip.classList.toggle('active', isActive);
@@ -5973,11 +5984,10 @@ def build_archive_page_html(archive_items):
   }});
 </script>
 
-
-
 </body>
 </html>
 """
+
 
 
 
@@ -6083,6 +6093,24 @@ def get_github_file_text(path_in_repo: str):
     except Exception:
         return None
 
+def infer_edition(item: dict) -> str:
+    """
+    archive.json에 edition 필드가 없던 과거 데이터 호환용.
+    url 또는 label로 daily/weekly를 추론.
+    """
+    if not isinstance(item, dict):
+        return "weekly"
+
+    url = (item.get("url") or "")
+    label = (item.get("label") or "")
+
+    # daily 경로 예: /2025daily/12daily/29/
+    if "daily" in url:
+        return "daily"
+    if "데일리" in label or "Daily" in label or "데일리 뉴스" in label:
+        return "daily"
+
+    return "weekly"
 
 def load_existing_archive():
     """
@@ -6098,9 +6126,14 @@ def load_existing_archive():
         try:
             items = json.loads(json_text)
             if isinstance(items, list):
+                # ✅ 과거 데이터(edition 없음) 호환
+                for it in items:
+                    if isinstance(it, dict) and not it.get("edition"):
+                        it["edition"] = infer_edition(it)
                 return items
         except Exception:
             pass  # 실패하면 fallback
+
 
     # --------------------------------------------------
     # 2) fallback: 기존 폴더 스캔 방식
@@ -6158,7 +6191,9 @@ def load_existing_archive():
                     "date_str": date_str,
                     "url": url,
                     "insight": "",   # fallback에는 insight 없음
+                    "edition": "weekly",
                 })
+
 
     return archive_items
 
@@ -6802,9 +6837,10 @@ today_item = {
     "label": f"{WEEK_LABEL} 뉴스레터",
     "date_str": NEWSLETTER_DATE,
     "url": MAIN_PAGE_URL,
-    # ✅ 아카이브 카드에서 바로 쓰는 값(1줄)
     "insight": weekly_focus_insight_card,
+    "edition": "weekly",
 }
+
 
 # ✅ 같은 URL이 있으면 "스킵"이 아니라 "업데이트" (기존 카드에 insight를 채워 넣기)
 found = None
@@ -6879,7 +6915,7 @@ for topic_num, url in TOPIC_MORE_URLS.items():
 # # **09 이메일 자동 발송**
 # ### **(Colab에서 실행하면 테스트 이메일로, Github 실행 시, 실제 수신자에게)**
 
-# In[70]:
+# In[ ]:
 
 
 SEND_EMAIL = os.environ.get("SEND_EMAIL", "true").lower() == "true"
@@ -6946,7 +6982,7 @@ else:
 
 # # **10. 최종 통계 출력**
 
-# In[71]:
+# In[ ]:
 
 
 # ============================
@@ -7111,8 +7147,9 @@ print("="*70 + "\n")
 
 
 # ============================================================
-# Colab 전용: 현재 노트북 전체를 .py로 변환해 GitHub의 newsletter.py를 교체
-# + (추가) newsletter_history/ 폴더에 타임스탬프 파일로 스냅샷 저장
+# Colab 전용 (WEEKLY):
+# notebook -> newsletter.py 업데이트
+# + newsletter_weekly_history/에 스냅샷 저장 (daily와 완전 분리)
 # ============================================================
 
 def _in_colab() -> bool:
@@ -7123,18 +7160,15 @@ def _in_colab() -> bool:
         return False
 
 if _in_colab():
-    import os
-    import json
-    import base64
-    import requests
+    import os, json, base64, requests
+    from datetime import datetime, timezone, timedelta
 
-    # 1) GitHub 설정 (필수)
     GITHUB_OWNER = os.environ.get("GITHUB_OWNER", "HANCOM-InSpace")
     GITHUB_REPO  = os.environ.get("GITHUB_REPO", "Weekly-Newsletter")
     BRANCH       = os.environ.get("GITHUB_BRANCH", "main")
-    TARGET_PATH  = "newsletter.py"
 
-    # Colab Secrets 또는 환경변수로 토큰 제공 (둘 중 하나)
+    TARGET_PATH  = "newsletter.py"  # weekly 메인 파일명에 맞게 유지/수정
+
     GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
     if not GITHUB_TOKEN:
         try:
@@ -7142,31 +7176,21 @@ if _in_colab():
             GITHUB_TOKEN = userdata.get("GITHUB_TOKEN")
         except Exception:
             GITHUB_TOKEN = None
-
     if not GITHUB_TOKEN:
         raise RuntimeError("GITHUB_TOKEN이 없습니다. Colab Secrets 또는 환경변수로 설정하세요.")
 
-    # 2) 현재 노트북(.ipynb)을 '파일 없이' 직접 가져오기 (Colab API)
     from google.colab import _message
     nb = _message.blocking_request("get_ipynb", timeout_sec=30)
     nb_json = nb["ipynb"]
 
-    # 3) 노트북 JSON -> Python(.py) 변환 (nbconvert)
     import nbformat
     from nbconvert.exporters import PythonExporter
-
     nb_node = nbformat.reads(json.dumps(nb_json), as_version=4)
-    exporter = PythonExporter()
-    py_text, _ = exporter.from_notebook_node(nb_node)
+    py_text, _ = PythonExporter().from_notebook_node(nb_node)
 
-    # 4) GitHub API로 기존 newsletter.py SHA 조회 후 업데이트(PUT)
+    headers = {"Authorization": f"Bearer {GITHUB_TOKEN}", "Accept": "application/vnd.github+json"}
     api_url = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/contents/{TARGET_PATH}"
-    headers = {
-        "Authorization": f"Bearer {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github+json",
-    }
 
-    # 기존 파일 조회(sha 필요)
     r = requests.get(api_url, headers=headers, params={"ref": BRANCH})
     if r.status_code == 200:
         sha = r.json()["sha"]
@@ -7177,11 +7201,8 @@ if _in_colab():
 
     content_b64 = base64.b64encode(py_text.encode("utf-8")).decode("utf-8")
 
-    # 커밋 메시지 (원하면 수정)
-    commit_msg = "Update newsletter.py from Colab notebook"
-
     payload = {
-        "message": commit_msg,
+        "message": "Update newsletter.py from Colab notebook",
         "content": content_b64,
         "branch": BRANCH,
     }
@@ -7191,48 +7212,33 @@ if _in_colab():
     u = requests.put(api_url, headers=headers, json=payload)
     if u.status_code not in (200, 201):
         raise RuntimeError(f"GitHub PUT 실패: {u.status_code} / {u.text}")
-
     print(f"✅ GitHub에 {TARGET_PATH} 업데이트 완료: {GITHUB_OWNER}/{GITHUB_REPO}@{BRANCH}")
 
-    # ============================================================
-    # (추가) 히스토리 파일 저장:
-    # newsletter_history/newsletter_YYYY_MM_DD_HH_MM.py
-    # ============================================================
-    HISTORY_DIR = "newsletter_history"
+    # ---- WEEKLY HISTORY (완전 분리) ----
+    HISTORY_DIR = "newsletter_weekly_history"
 
-    # KST 타임스탬프 생성 (같은 분에 2번 저장하면 충돌할 수 있어 재시도 로직 포함)
-    from datetime import datetime, timezone, timedelta
     KST = timezone(timedelta(hours=9))
     ts = datetime.now(KST).strftime("%Y_%m_%d_%H_%M")
-
-    history_path = f"{HISTORY_DIR}/newsletter_{ts}.py"
+    history_path = f"{HISTORY_DIR}/newsletter_weekly_{ts}.py"
     api_url_hist = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/contents/{history_path}"
 
     payload_hist = {
-        "message": f"Archive snapshot: {history_path}",
+        "message": f"Archive snapshot (weekly): {history_path}",
         "content": content_b64,
         "branch": BRANCH,
     }
 
     resp = requests.put(api_url_hist, headers=headers, json=payload_hist)
-
     if resp.status_code in (200, 201):
-        print(f"✅ 히스토리 저장 완료: {history_path}")
+        print(f"✅ WEEKLY 히스토리 저장 완료: {history_path}")
     else:
-        # 같은 분에 중복 저장 등으로 실패 시 -> 초까지 붙여 재시도
         ts2 = datetime.now(KST).strftime("%Y_%m_%d_%H_%M_%S")
-        history_path2 = f"{HISTORY_DIR}/newsletter_{ts2}.py"
+        history_path2 = f"{HISTORY_DIR}/newsletter_weekly_{ts2}.py"
         api_url_hist2 = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/contents/{history_path2}"
-
-        payload_hist["message"] = f"Archive snapshot: {history_path2}"
+        payload_hist["message"] = f"Archive snapshot (weekly): {history_path2}"
         resp2 = requests.put(api_url_hist2, headers=headers, json=payload_hist)
-
         if resp2.status_code in (200, 201):
-            print(f"✅ 히스토리 저장 완료(초 포함): {history_path2}")
+            print(f"✅ WEEKLY 히스토리 저장 완료(초 포함): {history_path2}")
         else:
-            raise RuntimeError(f"히스토리 저장 실패: {resp2.status_code} / {resp2.text}")
-
-else:
-    # Colab이 아닌 환경(예: GitHub Actions)에서는 아무 것도 하지 않음
-    pass
+            raise RuntimeError(f"WEEKLY 히스토리 저장 실패: {resp2.status_code} / {resp2.text}")
 
