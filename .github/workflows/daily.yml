@@ -2,27 +2,34 @@ name: Daily Newsletter
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 0 * * *"  # UTC 기준. KST 오전 9시면 UTC 00:00
+
+permissions:
+  contents: write   # ← 이게 없으면 파일 업로드(커밋) 안 됨
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
+          pip install --upgrade pip
           pip install -r requirements.txt
-
-      - name: Run daily newsletter
+    
+      - name: Run newsletter script
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 🔴 핵심
+          GITHUB_TOKEN: ${{ github.token }}
+
+          # 🔹 기존에 쓰던 API 키들
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
           NEWSDATA_API_KEY: ${{ secrets.NEWSDATA_API_KEY }}
@@ -32,9 +39,11 @@ jobs:
           CURRENTS_API_KEY: ${{ secrets.CURRENTS_API_KEY }}
           NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
           NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+          
+          # 🔹 메일 발송 관련
+          TO_EMAIL: ${{ secrets.TO_EMAIL }}
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-          TO_EMAIL: ${{ secrets.TO_EMAIL }}
-          TO_EMAIL_TEST: ${{ secrets.TO_EMAIL_TEST }}
+
         run: |
-          python "newsletter_daily (1).py"
+          python "newsletter_daily.py"
