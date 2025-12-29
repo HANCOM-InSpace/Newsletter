@@ -5907,7 +5907,6 @@ def build_archive_page_html(archive_items):
 
     function updateView() {{
       rows.forEach(function(row) {{
-        var rowEdition = row.getAttribute('data-edition') || 'weekly';
         var rowYear = row.getAttribute('data-year');
         var rowMonth = parseInt(row.getAttribute('data-month') || '0', 10);
 
@@ -5927,7 +5926,6 @@ def build_archive_page_html(archive_items):
       }});
 
       document.querySelectorAll('.edition-chip').forEach(function(chip) {{
-        var v = chip.getAttribute('data-edition');
         chip.classList.toggle('active', v === state.edition);
       }});
 
