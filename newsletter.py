@@ -4077,7 +4077,7 @@ print("="*60 + "\n")
 
 # # **08-2 카드/섹션 HTML + 최종 뉴스레터 HTML 생성**
 
-# In[21]:
+# In[26]:
 
 
 # ============================
@@ -6197,6 +6197,284 @@ def load_existing_archive():
 
     return archive_items
 
+# ============================================================
+# (PATCH) Archive refresh + URL migration utilities
+# - 매 실행 시 docs 폴더 스캔으로 archive refresh
+# - 구 repo(Weekly-Newsletter 등) 링크를 현재 BASE_URL로 자동 치환
+# - weekly insight는 기존 archive.json 값을 보존
+# ============================================================
+
+from urllib.parse import urlparse
+
+# 구 repo 슬러그들을 환경변수로도 확장 가능 (콤마로 구분)
+# 예: ARCHIVE_OLD_REPOS="Weekly-Newsletter,weekly-newsletter"
+_ARCHIVE_OLD_REPOS = [
+    s.strip() for s in (os.environ.get("ARCHIVE_OLD_REPOS", "Weekly-Newsletter,weekly-newsletter").split(","))
+    if s.strip()
+]
+
+def _get_repo_slug_from_base_url(base_url: str) -> str:
+    """
+    BASE_URL이 예: https://hancom-inspace.github.io/Newsletter
+    또는      https://hancom-inspace.github.io/newsletter
+    일 때 repo slug('Newsletter')를 추출
+    """
+    try:
+        p = urlparse(base_url)
+        parts = [x for x in p.path.split("/") if x]
+        return parts[0] if parts else ""
+    except Exception:
+        return ""
+
+def _canonicalize_archive_url(url: str) -> str:
+    """
+    archive.json에 남아있는 구 repo 링크(Weekly-Newsletter 등)를
+    현재 BASE_URL의 repo slug로 치환.
+    """
+    if not url:
+        return url
+
+    try:
+        base_repo = _get_repo_slug_from_base_url(BASE_URL)
+        if not base_repo:
+            return url
+
+        # github.io 기반만 치환 대상으로 취급
+        if "github.io" not in url:
+            return url
+
+        # /<old_repo>/... 형태를 /<base_repo>/... 로 교체
+        for old in _ARCHIVE_OLD_REPOS:
+            needle = f"/{old}/"
+            if needle in url:
+                return url.replace(needle, f"/{base_repo}/")
+
+        return url
+    except Exception:
+        return url
+
+def _normalize_archive_item(it: dict) -> dict:
+    """
+    dict 형태 보장 + edition 보정 + url canonicalize
+    """
+    if not isinstance(it, dict):
+        return {}
+    out = dict(it)
+
+    if not out.get("edition"):
+        out["edition"] = infer_edition(out)
+
+    if out.get("url"):
+        out["url"] = _canonicalize_archive_url(out["url"])
+
+    # 필드 기본값 보강
+    out.setdefault("label", "")
+    out.setdefault("date_str", "")
+    out.setdefault("insight", "")
+    out.setdefault("edition", "weekly")
+    return out
+
+def _parse_date_str(s: str):
+    """
+    'YYYY.MM.DD' 우선, 실패 시 'YYYY-MM-DD'도 시도.
+    """
+    if not s:
+        return None
+    for fmt in ("%Y.%m.%d", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(s.strip(), fmt).date()
+        except Exception:
+            pass
+    return None
+
+def _scan_weekly_docs_for_archive() -> list:
+    """
+    weekly 구조: docs/YYYY/MM/DD/index.html
+    """
+    items = []
+    docs_children = list_github_directory("docs")
+
+    year_dirs = [
+        d["name"] for d in docs_children
+        if d.get("type") == "dir" and (d.get("name", "").isdigit())
+    ]
+
+    for year_name in year_dirs:
+        year_path = f"docs/{year_name}"
+        month_children = list_github_directory(year_path)
+
+        month_dirs = [
+            m["name"] for m in month_children
+            if m.get("type") == "dir" and (m.get("name", "").isdigit())
+        ]
+
+        for month_name in month_dirs:
+            month_path = f"docs/{year_name}/{month_name}"
+            day_children = list_github_directory(month_path)
+
+            day_dirs = [
+                d["name"] for d in day_children
+                if d.get("type") == "dir" and (d.get("name", "").isdigit())
+            ]
+
+            for day_name in day_dirs:
+                day_path = f"docs/{year_name}/{month_name}/{day_name}"
+                files = list_github_directory(day_path)
+
+                has_index = any(
+                    f.get("type") == "file" and f.get("name") == "index.html"
+                    for f in files
+                )
+                if not has_index:
+                    continue
+
+                try:
+                    y = int(year_name)
+                    mo = int(month_name)
+                    da = int(day_name)
+                    date_obj = datetime(y, mo, da).date()
+                except Exception:
+                    continue
+
+                date_str = date_obj.strftime("%Y.%m.%d")
+                label = f"{date_obj.month}월 {date_obj.day}일 {date_obj.isocalendar().week}주차 뉴스레터"
+                url = f"{BASE_URL}/{year_name}/{month_name}/{day_name}/index.html"
+
+                items.append({
+                    "label": label,
+                    "date_str": date_str,
+                    "url": url,
+                    "insight": "",      # weekly insight는 기존 archive.json에서 보존
+                    "edition": "weekly"
+                })
+
+    return items
+
+def _scan_daily_docs_for_archive() -> list:
+    """
+    daily 구조: docs/YYYYdaily/MMdaily/DD/index.html
+    """
+    items = []
+    docs_children = list_github_directory("docs")
+
+    year_dirs = [
+        item["name"]
+        for item in docs_children
+        if item.get("type") == "dir" and re.match(r"^\d{4}daily$", item.get("name", ""))
+    ]
+
+    for year_dir in year_dirs:
+        year_path = f"docs/{year_dir}"
+        month_children = list_github_directory(year_path)
+
+        month_dirs = [
+            m["name"]
+            for m in month_children
+            if m.get("type") == "dir" and re.match(r"^\d{2}daily$", m.get("name", ""))
+        ]
+
+        for month_dir in month_dirs:
+            month_path = f"docs/{year_dir}/{month_dir}"
+            day_children = list_github_directory(month_path)
+
+            day_dirs = [
+                d["name"]
+                for d in day_children
+                if d.get("type") == "dir" and (d.get("name", "").isdigit())
+            ]
+
+            for day_name in day_dirs:
+                day_path = f"docs/{year_dir}/{month_dir}/{day_name}"
+                files = list_github_directory(day_path)
+
+                has_index = any(
+                    f.get("type") == "file" and f.get("name") == "index.html"
+                    for f in files
+                )
+                if not has_index:
+                    continue
+
+                try:
+                    year_num = int(year_dir.replace("daily", ""))
+                    month_num = int(month_dir.replace("daily", ""))
+                    day_num = int(day_name)
+                    date_obj = datetime(year_num, month_num, day_num).date()
+                except Exception:
+                    continue
+
+                date_str = date_obj.strftime("%Y.%m.%d")
+                label = f"{date_obj.month}월 {date_obj.day}일 일간 뉴스레터"
+                url = f"{BASE_URL}/{year_dir}/{month_dir}/{day_name}/index.html"
+
+                items.append({
+                    "label": label,
+                    "date_str": date_str,
+                    "url": url,
+                    "insight": "",
+                    "edition": "daily",
+                })
+
+    return items
+
+def refresh_archive_items(existing_items: list) -> list:
+    """
+    1) 기존 archive.json 로딩 데이터(=existing_items)에서 insight/텍스트를 최대한 보존
+    2) docs 폴더 스캔 결과를 canonical source로 사용(= 링크 최신화, 누락 방지)
+    3) 최종적으로 최신 날짜가 위로 오도록 정렬
+    """
+    existing_norm = []
+    for it in (existing_items or []):
+        norm = _normalize_archive_item(it)
+        if norm:
+            existing_norm.append(norm)
+
+    # 기존 데이터 인덱싱: (edition, date_str) 기준 + url도 보조키로
+    idx_by_key = {}
+    idx_by_url = {}
+    for it in existing_norm:
+        key = (it.get("edition", ""), it.get("date_str", ""))
+        if key != ("", ""):
+            idx_by_key[key] = it
+        if it.get("url"):
+            idx_by_url[it["url"]] = it
+
+    scanned = _scan_weekly_docs_for_archive() + _scan_daily_docs_for_archive()
+
+    merged = []
+    for s in scanned:
+        s = _normalize_archive_item(s)
+        key = (s.get("edition", ""), s.get("date_str", ""))
+
+        old = idx_by_key.get(key) or idx_by_url.get(s.get("url", ""))
+        if old:
+            # 기존 값 보존(특히 weekly insight)
+            keep_insight = (old.get("insight") or "").strip()
+            if keep_insight and s.get("edition") == "weekly":
+                s["insight"] = keep_insight
+
+            # label도 기존이 더 나으면 유지(원하는 경우)
+            if (old.get("label") or "").strip():
+                s["label"] = old["label"]
+
+        merged.append(s)
+
+    # 스캔에 잡히지 않는 “레거시 항목”도 혹시 있을 수 있으니, url이 유효하면 뒤에 보조로 추가
+    scanned_urls = {x.get("url") for x in merged if x.get("url")}
+    for it in existing_norm:
+        u = it.get("url")
+        if u and u not in scanned_urls:
+            # 단, 구 repo 링크는 canonicalize 해두었으므로 그대로 유지 가능
+            merged.append(it)
+
+    # 최신 날짜 순 정렬 (date_str 파싱 불가한 것은 맨 아래)
+    def _sort_key(it: dict):
+        d = _parse_date_str(it.get("date_str", ""))
+        # 날짜가 없으면 아주 오래된 것으로 취급
+        return (d is None, d or date(1900, 1, 1))
+
+    merged.sort(key=_sort_key, reverse=True)
+
+    return merged
 
 
 # 실행 시점에 이전 아카이브 목록 로딩
@@ -6824,36 +7102,34 @@ main_repo_path = f"docs/{FOLDER_PATH}/index.html"
 commit_msg_main = f"Add newsletter main: {FOLDER_PATH}"
 upload_file_to_github(main_repo_path, newsletter_html, commit_msg_main)
 
-# ▼ 이전 뉴스레터 아카이브 페이지 생성
-archive_items = list(NEWSLETTER_ARCHIVE_BASE)
+# ▼ 이전 뉴스레터 아카이브 페이지 생성 (refresh 기반)
+# 1) 기존 archive.json/폴더스캔 기반 데이터 로딩값(NEWSLETTER_ARCHIVE_BASE)을 입력으로 넣고,
+# 2) docs 폴더를 다시 스캔해서 전체 archive를 refresh(= 링크/목록 최신화)
+archive_items = refresh_archive_items(NEWSLETTER_ARCHIVE_BASE)
 
-# ✅ 메인 페이지용(1~3줄) insight는 그대로 유지
-weekly_focus_insight_full = weekly_focus_insight
-
-# ✅ 아카이브 카드에는 1줄로 재요약해서 저장
-weekly_focus_insight_card = summarize_insight_for_archive(weekly_focus_insight_full)
+# ✅ weekly: 아카이브 카드용 insight는 "짧은 버전"을 넣는 것을 권장
+# (newsletter(7).py에 summarize_insight_for_archive가 있다면 그대로 사용)
+weekly_focus_insight_card = summarize_insight_for_archive(weekly_focus_insight)
 
 today_item = {
     "label": f"{WEEK_LABEL} 주간 뉴스레터",
     "date_str": NEWSLETTER_DATE,
     "url": MAIN_PAGE_URL,
-    "insight": weekly_focus_insight_card,
-    "edition": "weekly",
+    "insight": weekly_focus_insight_card,   # ✅ weekly는 insight 포함
+    "edition": "weekly",                    # ✅ weekly
 }
+today_item = _normalize_archive_item(today_item)
 
-
-# ✅ 같은 URL이 있으면 "스킵"이 아니라 "업데이트" (기존 카드에 insight를 채워 넣기)
+# (중요) repo rename으로 url이 바뀌어도 동일 날짜(weekly)는 같은 항목으로 취급하도록
+# (edition, date_str) 기준으로 업데이트
 found = None
 for item in archive_items:
-    if item.get("url") == today_item["url"]:
+    if (item.get("edition"), item.get("date_str")) == (today_item["edition"], today_item["date_str"]):
         found = item
         break
 
 if found:
-    # 기존 항목을 최신 값으로 갱신 (insight 포함)
     found.update(today_item)
-
-    # (선택) 최신 항목이 리스트 맨 앞에 오도록 정렬 유지
     archive_items = [found] + [x for x in archive_items if x is not found]
 else:
     archive_items.insert(0, today_item)
@@ -6879,11 +7155,11 @@ archive_json_str = json.dumps(archive_items, ensure_ascii=False, indent=2)
 with open("archive.json", "w", encoding="utf-8") as f:
     f.write(archive_json_str)
 
-# GitHub 업로드 (JSON)
+# GitHub 업로드 (JSON) - refresh 결과를 매번 archive.json에 반영
 upload_file_to_github(
     ARCHIVE_JSON_PATH,
     archive_json_str,
-    f"Update archive data: {NEWSLETTER_DATE}"
+    f"Refresh archive data: {NEWSLETTER_DATE}"
 )
 
 
@@ -6915,7 +7191,7 @@ for topic_num, url in TOPIC_MORE_URLS.items():
 # # **09 이메일 자동 발송**
 # ### **(Colab에서 실행하면 테스트 이메일로, Github 실행 시, 실제 수신자에게)**
 
-# In[22]:
+# In[27]:
 
 
 SEND_EMAIL = os.environ.get("SEND_EMAIL", "true").lower() == "true"
@@ -6982,7 +7258,7 @@ else:
 
 # # **10. 최종 통계 출력**
 
-# In[ ]:
+# In[28]:
 
 
 # ============================
