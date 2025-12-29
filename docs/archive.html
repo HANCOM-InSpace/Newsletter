@@ -18,7 +18,6 @@
     color:#e5e7eb;
   }
 
-
   .bg-video {
     display: block;
     filter: blur(2px) brightness(0.78) saturate(0.95);
@@ -39,14 +38,13 @@
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: -4;              /* video(-1)보다 뒤로 */
+    z-index: -4;              /* video(-3)보다 뒤로 */
     background-image: url('https://hancom-inspace.github.io/Weekly-Newsletter/assets/archive_bg_fallback1.png');
     background-size: cover;
     background-position: center top;
     background-repeat: no-repeat;
     display: none;   /* 데스크톱 기본값 */
   }
-
 
   .bg-dim{
     position: fixed;
@@ -67,11 +65,6 @@
     .bg-video{ display: none; }
     .bg-image{
       display: block;
-
-      /* ✅ 모바일 이미지가 너무 또렷한 문제 해결:
-        - 아주 살짝 blur
-        - 살짝 어둡게 (brightness)
-        - 살짝 채도/대비 줄이기 (선택) */
       filter: blur(2px) brightness(0.78) saturate(0.95);
       transform: scale(1.03); /* blur 가장자리 깨짐 방지 */
     }
@@ -95,7 +88,6 @@
   .archive-card-date{
     text-shadow: 0 1px 6px rgba(0,0,0,0.35);
   }
-
 
   .filter-wrap {
     margin: 0 16px 12px 16px;
@@ -128,7 +120,6 @@
     transition:background 0.18s ease, border-color 0.18s ease, transform 0.12s ease, box-shadow 0.12s ease;
   }
 
-
   /* ✅ Weekly Focus Insight(아카이브 카드용) */
   .archive-card-insight{
     font-size:13px;
@@ -147,7 +138,6 @@
     overflow-wrap: break-word;
   }
 
-
   .chip-base:hover {
     background:rgba(30,64,175,0.7);
     border-color:#60a5fa;
@@ -161,8 +151,6 @@
     color:#ffffff;
     box-shadow:0 0 0 1px rgba(15,23,42,0.4);
   }
-
-
 
   .archive-card {
       display:block;
@@ -218,15 +206,6 @@
     }
   }
 
-
-    .archive-wrap {
-      background: radial-gradient(
-        circle at top,
-        rgba(148,163,184,0.18) 0,
-        transparent 55%
-      );
-    }
-  }
 </style>
 </head>
 
@@ -249,6 +228,8 @@
         <tr>
           <td>
             <div class="filter-wrap">
+              <!-- ✅ 디자인 유지: 기존 chips-row 그대로 사용 -->
+              <div id="edition-chips" class="chips-row"></div>
               <div id="year-chips" class="chips-row"></div>
               <div id="month-chips" class="chips-row"></div>
             </div>
@@ -260,7 +241,24 @@
             <table width="100%" cellpadding="0" cellspacing="0" border="0">
               <tbody>
                 
-        <tr class="archive-row" data-year="2025" data-month="12">
+        <tr class="archive-row" data-year="2025" data-month="12" data-edition="daily">
+          <td style="padding-bottom:16px;">
+            <a href="https://hancom-inspace.github.io/Weekly-Newsletter/2025daily/12daily/29/index.html" class="archive-card">
+              <div class="archive-card-label">
+                12월 28일 데일리 뉴스
+              </div>
+
+              
+
+              <div class="archive-card-date">
+                업로드: 2025.12.28
+              </div>
+            </a>
+          </td>
+        </tr>
+        
+
+        <tr class="archive-row" data-year="2025" data-month="12" data-edition="weekly">
           <td style="padding-bottom:16px;">
             <a href="https://hancom-inspace.github.io/Weekly-Newsletter/2025/12/29/index.html" class="archive-card">
               <div class="archive-card-label">
@@ -281,7 +279,7 @@
         </tr>
         
 
-        <tr class="archive-row" data-year="2025" data-month="12">
+        <tr class="archive-row" data-year="2025" data-month="12" data-edition="weekly">
           <td style="padding-bottom:16px;">
             <a href="https://hancom-inspace.github.io/Weekly-Newsletter/2025/12/28/index.html" class="archive-card">
               <div class="archive-card-label">
@@ -302,7 +300,7 @@
         </tr>
         
 
-        <tr class="archive-row" data-year="2025" data-month="12">
+        <tr class="archive-row" data-year="2025" data-month="12" data-edition="weekly">
           <td style="padding-bottom:16px;">
             <a href="https://hancom-inspace.github.io/Weekly-Newsletter/2025/12/27/index.html" class="archive-card">
               <div class="archive-card-label">
@@ -323,7 +321,7 @@
         </tr>
         
 
-        <tr class="archive-row" data-year="2025" data-month="12">
+        <tr class="archive-row" data-year="2025" data-month="12" data-edition="weekly">
           <td style="padding-bottom:16px;">
             <a href="https://hancom-inspace.github.io/Weekly-Newsletter/2025/12/26/index.html" class="archive-card">
               <div class="archive-card-label">
@@ -344,7 +342,7 @@
         </tr>
         
 
-        <tr class="archive-row" data-year="2025" data-month="12">
+        <tr class="archive-row" data-year="2025" data-month="12" data-edition="weekly">
           <td style="padding-bottom:16px;">
             <a href="https://hancom-inspace.github.io/Weekly-Newsletter/2025/12/25/index.html" class="archive-card">
               <div class="archive-card-label">
@@ -365,7 +363,7 @@
         </tr>
         
 
-        <tr class="archive-row" data-year="2025" data-month="12">
+        <tr class="archive-row" data-year="2025" data-month="12" data-edition="weekly">
           <td style="padding-bottom:16px;">
             <a href="https://hancom-inspace.github.io/Weekly-Newsletter/2025/12/24/index.html" class="archive-card">
               <div class="archive-card-label">
@@ -386,7 +384,7 @@
         </tr>
         
 
-        <tr class="archive-row" data-year="2025" data-month="12">
+        <tr class="archive-row" data-year="2025" data-month="12" data-edition="weekly">
           <td style="padding-bottom:16px;">
             <a href="https://hancom-inspace.github.io/Weekly-Newsletter/2025/12/23/index.html" class="archive-card">
               <div class="archive-card-label">
@@ -418,7 +416,7 @@
   document.addEventListener('DOMContentLoaded', function() {
 
     // =========================================================
-    // 0) 비디오 스크롤 스크럽(스무딩) — 필터 return과 무관하게 항상 동작
+    // 0) 비디오 스크롤 스크럽(스무딩) — 항상 동작
     // =========================================================
     var video = document.getElementById('bgVideo');
 
@@ -446,9 +444,6 @@
         var scrollTop = window.pageYOffset || doc.scrollTop || 0;
         var maxScroll = (doc.scrollHeight - window.innerHeight);
 
-
-
-
         var VIRTUAL_SCROLL_PX = 2600;
         var denom = Math.max(1, Math.max(maxScroll, VIRTUAL_SCROLL_PX));
 
@@ -465,10 +460,6 @@
         if (scale > 2.5) scale = 2.5;
 
         targetTime = desired;
-
-
-
-
 
         // 스크롤 속도 기반 스무딩 조절
         if (!window.__bgScrubState) {
@@ -495,11 +486,10 @@
 
       function applyTime(t) {
         // ✅ 30fps 기준으로 프레임 단위 양자화 → 불필요한 미세 시킹 감소
-        var FRAME_STEP = 1 / 30;          // 30fps 기준 (원하면 1/24, 1/25도 가능)
+        var FRAME_STEP = 1 / 30;
         t = Math.round(t / FRAME_STEP) * FRAME_STEP;
 
-        // ✅ 너무 잦은 seek 방지(디코더 부담↓)
-        var EPS = FRAME_STEP;             // 기존 0.02보다 조금 더 보수적으로
+        var EPS = FRAME_STEP;
         if (Math.abs((video.currentTime || 0) - t) < EPS) return;
 
         try {
@@ -510,7 +500,6 @@
           }
         } catch (e) {}
       }
-
 
       function animate() {
         if (!animating) return;
@@ -532,37 +521,32 @@
         duration = video.duration || 0;
         ready = duration > 0;
 
-        // 메타데이터 준비 후 첫 동기화 + 루프 시작
         calcTargetTimeFromScroll();
         startAnimLoop();
       }
 
       video.addEventListener('loadedmetadata', onMetaReady);
 
-      // 이미 준비된 경우 대비
       if (video.readyState >= 1) {
         onMetaReady();
       } else {
-        // 일부 환경에서 안전하게 metadata를 당기기
         try { video.load(); } catch (e) {}
       }
 
-    // ✅ scroll 이벤트 폭주 방지: rAF에서 1프레임에 1번만 targetTime 계산
-    var pendingScroll = false;
+      var pendingScroll = false;
 
-    function onScrollRAF() {
-      if (!pendingScroll) return;
-      pendingScroll = false;
+      function onScrollRAF() {
+        if (!pendingScroll) return;
+        pendingScroll = false;
 
-      calcTargetTimeFromScroll();
-      startAnimLoop();
-    }
+        calcTargetTimeFromScroll();
+        startAnimLoop();
+      }
 
-    window.addEventListener('scroll', function () {
-      pendingScroll = true;
-      window.requestAnimationFrame(onScrollRAF);
-    }, { passive: true });
-
+      window.addEventListener('scroll', function () {
+        pendingScroll = true;
+        window.requestAnimationFrame(onScrollRAF);
+      }, { passive: true });
 
       window.addEventListener('resize', function() {
         calcTargetTimeFromScroll();
@@ -570,17 +554,18 @@
     }
 
     // =========================================================
-    // 1) 연/월 필터(기존 코드) — 없으면 필터만 스킵
+    // 1) 연/월/edition 필터 — 없으면 필터만 스킵
     // =========================================================
     var rows = Array.prototype.slice.call(document.querySelectorAll('.archive-row'));
+    var editionContainer = document.getElementById('edition-chips');
     var yearContainer = document.getElementById('year-chips');
     var monthContainer = document.getElementById('month-chips');
 
-    // ✅ 여기서 return 하지 말고, 필터만 종료
-    if (!rows.length || !yearContainer || !monthContainer) {
+    if (!rows.length || !editionContainer || !yearContainer || !monthContainer) {
       return;
     }
 
+    // edition 상태 추가
     var yearSet = new Set();
     var yearMonthMap = {};
 
@@ -605,12 +590,38 @@
     var currentYear = String(today.getFullYear());
 
     var state = {
+      edition: 'all',
       year: yearSet.has(currentYear) ? currentYear : 'all',
       month: null
     };
 
     monthContainer.style.display = 'none';
 
+    // -------------------------
+    // edition chips (전체/주간/데일리)
+    // -------------------------
+    function createEditionChip(value, label) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'chip-base edition-chip';
+      btn.setAttribute('data-edition', value);
+      btn.textContent = label;
+
+      btn.addEventListener('click', function() {
+        state.edition = value;
+        updateView();
+      });
+
+      return btn;
+    }
+
+    editionContainer.appendChild(createEditionChip('all', '전체'));
+    editionContainer.appendChild(createEditionChip('weekly', '주간'));
+    editionContainer.appendChild(createEditionChip('daily', '데일리'));
+
+    // -------------------------
+    // year/month chips (기존 로직 유지)
+    // -------------------------
     function createYearChip(value, label) {
       var btn = document.createElement('button');
       btn.type = 'button';
@@ -675,12 +686,14 @@
 
     function updateView() {
       rows.forEach(function(row) {
+        var rowEdition = row.getAttribute('data-edition') || 'weekly';
         var rowYear = row.getAttribute('data-year');
         var rowMonth = parseInt(row.getAttribute('data-month') || '0', 10);
 
+        var editionMatch = (state.edition === 'all') || (rowEdition === state.edition);
         var yearMatch = (state.year === 'all') || (rowYear === state.year);
-        var monthMatch;
 
+        var monthMatch;
         if (state.year === 'all') {
           monthMatch = true;
         } else if (!state.month) {
@@ -689,17 +702,20 @@
           monthMatch = (rowMonth === state.month);
         }
 
-        row.style.display = (yearMatch && monthMatch) ? '' : 'none';
+        row.style.display = (editionMatch && yearMatch && monthMatch) ? '' : 'none';
       });
 
-      var yearChips = document.querySelectorAll('.year-chip');
-      yearChips.forEach(function(chip) {
+      document.querySelectorAll('.edition-chip').forEach(function(chip) {
+        var v = chip.getAttribute('data-edition');
+        chip.classList.toggle('active', v === state.edition);
+      });
+
+      document.querySelectorAll('.year-chip').forEach(function(chip) {
         var y = chip.getAttribute('data-year');
         chip.classList.toggle('active', y === state.year);
       });
 
-      var monthChips = document.querySelectorAll('.month-chip');
-      monthChips.forEach(function(chip) {
+      document.querySelectorAll('.month-chip').forEach(function(chip) {
         var m = parseInt(chip.getAttribute('data-month') || '0', 10);
         var isActive = (state.year !== 'all') && (state.month === m);
         chip.classList.toggle('active', isActive);
@@ -722,8 +738,6 @@
     updateView();
   });
 </script>
-
-
 
 </body>
 </html>
