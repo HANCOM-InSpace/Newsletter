@@ -4077,7 +4077,7 @@ print("="*60 + "\n")
 
 # # **08-2 카드/섹션 HTML + 최종 뉴스레터 HTML 생성**
 
-# In[15]:
+# In[21]:
 
 
 # ============================
@@ -6834,7 +6834,7 @@ weekly_focus_insight_full = weekly_focus_insight
 weekly_focus_insight_card = summarize_insight_for_archive(weekly_focus_insight_full)
 
 today_item = {
-    "label": f"{WEEK_LABEL} 뉴스레터",
+    "label": f"{WEEK_LABEL} 주간 뉴스레터",
     "date_str": NEWSLETTER_DATE,
     "url": MAIN_PAGE_URL,
     "insight": weekly_focus_insight_card,
@@ -6915,7 +6915,7 @@ for topic_num, url in TOPIC_MORE_URLS.items():
 # # **09 이메일 자동 발송**
 # ### **(Colab에서 실행하면 테스트 이메일로, Github 실행 시, 실제 수신자에게)**
 
-# In[16]:
+# In[22]:
 
 
 SEND_EMAIL = os.environ.get("SEND_EMAIL", "true").lower() == "true"
@@ -6956,7 +6956,7 @@ if SEND_EMAIL:
 
 # 🔹 실제 메일 전송
 if SEND_EMAIL and TO_EMAILS:
-    SUBJECT = f"한컴인스페이스 {WEEK_LABEL} 뉴스레터 | {NEWSLETTER_DATE}"
+    SUBJECT = f"한컴인스페이스 {WEEK_LABEL} 주간 뉴스레터 | {NEWSLETTER_DATE}"
 
     with open("newsletter.html", "r", encoding="utf-8") as f:
         html_content = f.read()
@@ -6982,7 +6982,7 @@ else:
 
 # # **10. 최종 통계 출력**
 
-# In[17]:
+# In[ ]:
 
 
 # ============================
