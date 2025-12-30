@@ -4401,7 +4401,7 @@ print("="*60 + "\n")
 
 # # **08-2 카드/섹션 HTML + 최종 뉴스레터 HTML 생성**
 
-# In[34]:
+# In[48]:
 
 
 # ============================
@@ -4480,16 +4480,12 @@ def format_journal_source_label(journal_name: str) -> str:
     return f"{site} - {main}"
 
 def make_card(article, use_korean_first=USE_KOREAN_FIRST):
-    """
-    메인 기사 카드 (썸네일 + 제목/부제목 + 날짜 + 요약)
-    """
-    thumb = article.get("thumbnail_url") or DEFAULT_THUMB
-
     ko = article.get("ko_title", "") or ""
     en = article.get("orig_title", "") or ""
     date = article.get("date", "") or ""
     summary = article.get("summary", "") or ""
     url = article.get("url", "") or ""
+    thumb = article.get("thumbnail_url") or DEFAULT_THUMB
 
     # 한/영 제목 정리
     if ko and en:
@@ -4505,68 +4501,61 @@ def make_card(article, use_korean_first=USE_KOREAN_FIRST):
               {h(sub_title)}
             </div>"""
 
+    # ✅ 카드 전체를 링크로 감싸기 + '자세히 보기' 제거
     return f"""
-<table width="100%" cellpadding="0" cellspacing="0" border="0"
-       style="margin-bottom:28px;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
   <tr>
     <td style="padding:0; margin:0;">
 
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <!-- ✅ 카드 전체 클릭 -->
+      <a class="row-link"
+        href="{h(url)}"
+        target="_blank"
+        style="text-decoration:none; color:inherit; display:block; padding:8px;">
 
-        <tr>
 
-          <!-- 썸네일 -->
-          <td valign="top" width="135" style="padding:0;">
-            <a href="{h(url)}" target="_blank" style="text-decoration:none;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <!-- 썸네일 (중첩 a 제거: 바깥 a만 사용) -->
+            <td valign="top" width="135" style="padding:0;">
               <img src="{h(thumb)}" width="120" height="120"
                    style="display:block; border-radius:14px; object-fit:cover;"
                    onerror="this.onerror=null; this.src='{DEFAULT_THUMB}';">
-            </a>
-          </td>
+            </td>
 
-          <!-- 제목/부제목 -->
-          <td valign="top" style="padding-left:6px;">
+            <!-- 제목/부제목/날짜 -->
+            <td valign="top" style="padding-left:6px;">
+              <div style="font-size:18px; font-weight:700; color:#111;
+                          margin-bottom:4px; line-height:1.35;">
+                {h(main_title)}
+              </div>
 
-            <div style="font-size:18px; font-weight:700; color:#111;
-                        margin-bottom:4px; line-height:1.35;">
-              {h(main_title)}
-            </div>
+              {sub_block}
 
-            {sub_block}
+              <div style="font-size:12px; color:#888; margin-bottom:2px;">
+                {h(date)}
+              </div>
+            </td>
+          </tr>
 
-            <div style="font-size:12px; color:#888; margin-bottom:2px;">
-              {h(date)}
-            </div>
+          <!-- 요약 -->
+          <tr>
+            <td colspan="2" style="padding-top:12px;">
+              <div style="font-size:14px; color:#333; line-height:1.8;">
+                {h(summary)}
+              </div>
+            </td>
+          </tr>
+        </table>
 
-          </td>
-
-        </tr>
-
-        <!-- 요약 -->
-        <tr>
-          <td colspan="2" style="padding-top:12px;">
-            <div style="font-size:14px; color:#333; line-height:1.8;">
-              {h(summary)}
-            </div>
-          </td>
-        </tr>
-
-        <!-- 원문 링크 -->
-        <tr>
-          <td colspan="2" style="padding-top:6px;">
-            <a href="{h(url)}" target="_blank"
-               style="font-size:13px; color:#0066cc; text-decoration:none;">
-              자세히 보기 →
-            </a>
-          </td>
-        </tr>
-
-      </table>
+      </a>
+      <!-- 링크 끝 -->
 
     </td>
   </tr>
 </table>
 """
+
 
 
 def make_research_card_text_only(article):
@@ -4865,34 +4854,34 @@ def build_inspace_more_page_html(more_articles, date_range, newsletter_date):
         </div>'''
 
         rows.append(f"""
-              <tr class="inspace-article-row" data-index="{idx}">
-                <td style="padding:10px 0; border-bottom:1px solid #e5e7eb;">
-                  <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                    <tr>
-                      <td valign="top" width="96" style="padding-right:8px;">
-                        <a href="{url}" target="_blank" style="text-decoration:none;">
-                          <img src="{h(thumb)}" width="80" height="80"
-                               style="display:block; border-radius:10px; object-fit:cover;"
-                               onerror="this.onerror=null; this.src='{DEFAULT_THUMB}';">
-                        </a>
-                      </td>
-                      <td valign="top">
-                        <div style="font-size:14px; line-height:1.5; margin-bottom:2px;">
-                          <a href="{url}" target="_blank"
-                             style="color:#111827; text-decoration:none;">
-                            {title}
-                          </a>
-                        </div>
-                        {sub_block}
-                        <div style="font-size:11px; color:#9ca3af; margin-top:2px;">
-                          {h(published)}
-                        </div>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
+          <tr class="inspace-article-row" data-index="{idx}">
+            <td style="padding:0; border-bottom:1px solid #e5e7eb;">
+              <a href="{url}" target="_blank"
+                style="text-decoration:none; color:inherit; display:block; padding:10px 0;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td valign="top" width="96" style="padding-right:8px;">
+                      <img src="{h(thumb)}" width="80" height="80"
+                          style="display:block; border-radius:10px; object-fit:cover;"
+                          onerror="this.onerror=null; this.src='{DEFAULT_THUMB}';">
+                    </td>
+
+                    <td valign="top">
+                      <div style="font-size:14px; line-height:1.5; margin-bottom:2px; color:#111827;">
+                        {title}
+                      </div>
+                      {sub_block}
+                      <div style="font-size:11px; color:#9ca3af; margin-top:2px;">
+                        {h(published)}
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </a>
+            </td>
+          </tr>
         """)
+
 
     table_html = f"""
 <table width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -4992,6 +4981,18 @@ def build_inspace_more_page_html(more_articles, date_range, newsletter_date):
   .content-wrapper {{
     flex: 1;
   }}
+
+  /* ✅ (NEW) 행 전체 클릭 링크 + 행 전체 hover */
+  a.row-link{{
+    display:block;
+    width:100%;
+    text-decoration:none;
+    color:inherit;
+  }}
+  a.row-link:hover{{
+    background:#f3f4f6;
+  }}
+
 </style>
 
 </head>
@@ -5296,36 +5297,35 @@ def build_more_page_html(topic_extra_articles, date_range, newsletter_date, head
             # ✅ 테이블 구조를 올바르게: <tr> 안에 다시 <tr> 넣지 않기
             rows.append(f"""
               <tr class="topic-article-row" data-index="{idx}">
-                <td style="padding:10px 0; border-bottom:1px solid #e5e7eb;">
-                  <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                    <tr>
-                      <!-- 썸네일 -->
-                      <td valign="top" width="96" style="padding-right:8px;">
-                        <a href="{h(url)}" target="_blank" style="text-decoration:none;">
+                <td style="padding:0; border-bottom:1px solid #e5e7eb;">
+                  <a class="row-link" href="{h(url)}" target="_blank"
+                    style="text-decoration:none; color:inherit; display:block; padding:10px 0;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <!-- 썸네일 -->
+                        <td valign="top" width="96" style="padding-right:8px;">
                           <img src="{h(thumb)}" width="80" height="80"
-                               style="display:block; border-radius:10px; object-fit:cover;"
-                               onerror="this.onerror=null; this.src='{DEFAULT_THUMB}';">
-                        </a>
-                      </td>
+                              style="display:block; border-radius:10px; object-fit:cover;"
+                              onerror="this.onerror=null; this.src='{DEFAULT_THUMB}';">
+                        </td>
 
-                      <!-- 제목/부제목/날짜 -->
-                      <td valign="top">
-                        <div style="font-size:14px; line-height:1.5; margin-bottom:2px;">
-                          <a href="{h(url)}" target="_blank"
-                             style="color:#111827; text-decoration:none;">
+                        <!-- 제목/부제목/날짜 -->
+                        <td valign="top">
+                          <div style="font-size:14px; line-height:1.5; margin-bottom:2px; color:#111827;">
                             {h(main_title)}
-                          </a>
-                        </div>
-                        {sub_block}
-                        <div style="font-size:11px; color:#9ca3af; margin-top:2px;">
-                          {h(date)}
-                        </div>
-                      </td>
-                    </tr>
-                  </table>
+                          </div>
+                          {sub_block}
+                          <div style="font-size:11px; color:#9ca3af; margin-top:2px;">
+                            {h(date)}
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+                  </a>
                 </td>
               </tr>
             """)
+
 
 
         table_html = f"""
@@ -5483,6 +5483,18 @@ def build_more_page_html(topic_extra_articles, date_range, newsletter_date, head
   .content-wrapper {{
     flex: 1;
   }}
+
+  /* ✅ (NEW) 행 전체 클릭 링크 + 행 전체 hover */
+  a.row-link{{
+    display:block;
+    width:100%;
+    text-decoration:none;
+    color:inherit;
+  }}
+  a.row-link:hover{{
+    background:#f3f4f6;
+  }}
+
 </style>
 
 
@@ -5749,28 +5761,29 @@ def build_research_more_page_html(extra_articles, date_range, newsletter_date, h
 
             rows.append(f"""
               <tr class="research-article-row" data-index="{idx}">
-                <td style="padding:8px 0; border-bottom:1px solid #e5e7eb;">
-                  <!-- 영문 원제목 -->
-                  <div style="font-size:14px; font-weight:600;
-                              line-height:1.5; margin-bottom:4px;">
-                    <a href="{h(url)}" target="_blank"
-                      style="color:#111827; text-decoration:none;">
+                <td style="padding:0; border-bottom:1px solid #e5e7eb;">
+                  <a class="row-link" href="{h(url)}" target="_blank"
+                    style="text-decoration:none; color:inherit; display:block; padding:10px 0;">
+                    <!-- 영문 원제목 -->
+                    <div style="font-size:14px; font-weight:600; line-height:1.5; margin-bottom:4px; color:#111827;">
                       {h(title_en)}
-                    </a>
-                  </div>
+                    </div>
 
-                  <!-- 날짜 + 소스 웹사이트/저널 표시 -->
-                  <div style="font-size:12px; font-weight:500; color:#374151; margin-bottom:2px;">
-                    {h(source_label)}
-                  </div>
+                    <!-- 저널(출처) -->
+                    <div style="font-size:12px; color:#6b7280; margin-bottom:4px;">
+                      {h(source_label)}
+                    </div>
 
-                  <!-- 날짜 -->
-                  <div style="font-size:12px; color:#9ca3af; margin-bottom:4px;">
-                    {h(date)}
-                  </div>
+                    <!-- 날짜 -->
+                    <div style="font-size:11px; color:#9ca3af; margin-bottom:6px;">
+                      {h(date)}
+                    </div>
+
+                  </a>
                 </td>
               </tr>
             """)
+
 
 
 
@@ -5928,6 +5941,18 @@ def build_research_more_page_html(extra_articles, date_range, newsletter_date, h
   .content-wrapper {{
     flex: 1;
   }}
+
+  /* ✅ (NEW) 행 전체 클릭 링크 + 행 전체 hover */
+  a.row-link{{
+    display:block;
+    width:100%;
+    text-decoration:none;
+    color:inherit;
+  }}
+  a.row-link:hover{{
+    background:#f3f4f6;
+  }}
+
 </style>
 
 
@@ -7467,7 +7492,17 @@ newsletter_html = f"""
     flex-shrink: 0;
   }}
 
-
+  /* ✅ (NEW) 행 전체 클릭 링크 + 행 전체 hover */
+  a.row-link{{
+    display:block;
+    width:100%;
+    box-sizing:border-box; /* ✅ 이 줄 추가 */
+    text-decoration:none;
+    color:inherit;
+  }}
+  a.row-link:hover{{
+    background-color:#e5e7eb; /* ✅ 요청하신 색으로 */
+  }}
 </style>
 
 
@@ -7895,7 +7930,7 @@ for topic_num, url in TOPIC_MORE_URLS.items():
 # # **09 이메일 자동 발송**
 # ### **(Colab에서 실행하면 테스트 이메일로, Github 실행 시, 실제 수신자에게)**
 
-# In[35]:
+# In[49]:
 
 
 SEND_EMAIL = os.environ.get("SEND_EMAIL", "true").lower() == "true"
@@ -7962,7 +7997,7 @@ else:
 
 # # **10. 최종 통계 출력**
 
-# In[36]:
+# In[50]:
 
 
 # ============================
