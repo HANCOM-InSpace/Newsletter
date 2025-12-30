@@ -4815,7 +4815,7 @@ def build_more_page_html(topic_extra_articles, date_range, newsletter_date, head
                       text-align:center;
                       line-height:1.6;">
 
-              본 메일은 한컴인스페이스 사내 구성원을 위한 주간 뉴스 브리핑입니다.<br>
+              본 메일은 한컴인스페이스 사내 구성원을 위한 주간 동향 뉴스 브리핑입니다.<br>
               외부로의 무단 전재 및 공유는 지양해 주시기 바랍니다.<br><br>
               &copy; {now_kst.year} Hancom InSpace. All Rights Reserved.
 
@@ -5261,7 +5261,7 @@ def build_research_more_page_html(extra_articles, date_range, newsletter_date, h
                       text-align:center;
                       line-height:1.6;">
 
-              본 메일은 한컴인스페이스 사내 구성원을 위한 주간 뉴스 브리핑입니다.<br>
+              본 메일은 한컴인스페이스 사내 구성원을 위한 주간 동향 뉴스 브리핑입니다.<br>
               외부로의 무단 전재 및 공유는 지양해 주시기 바랍니다.<br><br>
               &copy; {now_kst.year} Hancom InSpace. All Rights Reserved.
 
@@ -6849,7 +6849,7 @@ newsletter_html = f"""
                      text-align:center;
                      line-height:1.6;">
 
-            본 메일은 한컴인스페이스 사내 구성원을 위한 주간 뉴스 브리핑입니다.<br>
+            본 메일은 한컴인스페이스 사내 구성원을 위한 주간 동향 뉴스 브리핑입니다.<br>
             외부로의 무단 전재 및 공유는 지양해 주시기 바랍니다.<br><br>
             &copy; {now_kst.year} Hancom InSpace. All Rights Reserved.
 
